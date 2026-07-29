@@ -5,7 +5,7 @@
  ******************************************************************************/
 
 #include <stdint.h>
-#include "sound_output.h"
+#include "../sound_output.h"
 
 /// Initializes the dummy sound output subsystem.
 void Sound_Init(void)

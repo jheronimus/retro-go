@@ -1,4 +1,4 @@
-#include "walnut_cgb.h"
+#include "gb.h"
 
 #if ENABLE_LCD
 struct sprite_data {

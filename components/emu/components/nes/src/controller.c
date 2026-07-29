@@ -22,18 +22,18 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-void xnes_controller_init(struct xnes_controller_t * ctl, struct xnes_ctx_t * ctx)
+void nes_controller_init(struct nes_controller_t * ctl, struct nes_ctx_t * ctx)
 {
 	ctl->ctx = ctx;
-	xnes_controller_reset(ctl);
+	nes_controller_reset(ctl);
 }
 
-void xnes_controller_reset(struct xnes_controller_t * ctl)
+void nes_controller_reset(struct nes_controller_t * ctl)
 {
 	ctl->turbo_count = 0x0;
-	ctl->turbo_speed = XNES_CONTROLLER_TURBO_SPEED_NORMAL;
+	ctl->turbo_speed = NES_CONTROLLER_TURBO_SPEED_NORMAL;
 	ctl->latch = 0x0;
 
 	ctl->joystick.p1.key = 0x0;
@@ -48,12 +48,12 @@ void xnes_controller_reset(struct xnes_controller_t * ctl)
 	ctl->zapper.trigger = 0;
 }
 
-void xnes_controller_set_turbo_speed(struct xnes_controller_t * ctl, uint8_t speed)
+void nes_controller_set_turbo_speed(struct nes_controller_t * ctl, uint8_t speed)
 {
 	ctl->turbo_speed = speed;
 }
 
-uint8_t xnes_controller_read_register(struct xnes_controller_t * ctl, uint16_t addr)
+uint8_t nes_controller_read_register(struct nes_controller_t * ctl, uint16_t addr)
 {
 	uint8_t val = 0;
 
@@ -93,7 +93,7 @@ uint8_t xnes_controller_read_register(struct xnes_controller_t * ctl, uint16_t a
 				val = 1;
 			if((ctl->zapper.x != 0) && (ctl->zapper.y != 0))
 			{
-				if(xnes_ppu_is_white_pixel(&ctl->ctx->ppu, ctl->zapper.x, ctl->zapper.y))
+				if(nes_ppu_is_white_pixel(&ctl->ctx->ppu, ctl->zapper.x, ctl->zapper.y))
 					val |= (0 << 3);
 				else
 					val |= (1 << 3);
@@ -108,7 +108,7 @@ uint8_t xnes_controller_read_register(struct xnes_controller_t * ctl, uint16_t a
 	return val;
 }
 
-void xnes_controller_write_register(struct xnes_controller_t * ctl, uint16_t addr, uint8_t val)
+void nes_controller_write_register(struct nes_controller_t * ctl, uint16_t addr, uint8_t val)
 {
 	switch(addr)
 	{
@@ -127,31 +127,31 @@ void xnes_controller_write_register(struct xnes_controller_t * ctl, uint16_t add
 	}
 }
 
-void xnes_controller_joystick_p1(struct xnes_controller_t * ctl, uint8_t down, uint8_t up)
+void nes_controller_joystick_p1(struct nes_controller_t * ctl, uint8_t down, uint8_t up)
 {
 	ctl->joystick.p1.key |= down;
 	ctl->joystick.p1.key &= ~up;
 }
 
-void xnes_controller_joystick_p2(struct xnes_controller_t * ctl, uint8_t down, uint8_t up)
+void nes_controller_joystick_p2(struct nes_controller_t * ctl, uint8_t down, uint8_t up)
 {
 	ctl->joystick.p2.key |= down;
 	ctl->joystick.p2.key &= ~up;
 }
 
-void xnes_controller_joystick_p1_turbo(struct xnes_controller_t * ctl, uint8_t down, uint8_t up)
+void nes_controller_joystick_p1_turbo(struct nes_controller_t * ctl, uint8_t down, uint8_t up)
 {
 	ctl->joystick.p1.key_turbo |= down;
 	ctl->joystick.p1.key_turbo &= ~up;
 }
 
-void xnes_controller_joystick_p2_turbo(struct xnes_controller_t * ctl, uint8_t down, uint8_t up)
+void nes_controller_joystick_p2_turbo(struct nes_controller_t * ctl, uint8_t down, uint8_t up)
 {
 	ctl->joystick.p2.key_turbo |= down;
 	ctl->joystick.p2.key_turbo &= ~up;
 }
 
-void xnes_controller_zapper(struct xnes_controller_t * ctl, uint8_t x, uint8_t y, uint8_t trigger)
+void nes_controller_zapper(struct nes_controller_t * ctl, uint8_t x, uint8_t y, uint8_t trigger)
 {
 	ctl->zapper.x = x;
 	ctl->zapper.y = y;

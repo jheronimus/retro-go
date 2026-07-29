@@ -1,5 +1,6 @@
 #include "shared.h"
 #include "main.h"
+#include "common.h"
 #include "screen.h"
 #include "memory.h"
 #include "event.h"
@@ -33,8 +34,8 @@ void pce_main(void)
     };
     app = rg_system_reinit(0, &handlers, NULL);
 
-    updates[0] = rg_surface_create(320, 240, RG_PIXEL_565, MEM_FAST);
-    updates[1] = rg_surface_create(320, 240, RG_PIXEL_565, MEM_FAST);
+    updates[0] = rg_surface_create(320, 240, RG_PIXEL_565_LE, MEM_FAST);
+    updates[1] = rg_surface_create(320, 240, RG_PIXEL_565_LE, MEM_FAST);
     currentUpdate = updates[0];
 
     memset(&config, 0, sizeof(config));
@@ -80,6 +81,6 @@ void pce_main(void)
 
         int frameTime = 1000000 / 60;
         int elapsed = rg_system_timer() - startTime;
-        if (elapsed < frameTime) rg_system_sleep((frameTime - elapsed) / 1000);
+        if (elapsed < frameTime) rg_task_delay((frameTime - elapsed) / 1000);
     }
 }

@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-static uint8_t xnes_mapper7_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper7_cpu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -49,9 +49,9 @@ static uint8_t xnes_mapper7_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper7_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper7_cpu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -70,18 +70,18 @@ static void xnes_mapper7_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8
 	case 7:	/* [0xE000, 0xFFFF] */
 		c->mapper.m.m7.prg_bank = val & 0x7;
 		if(val & 0x10)
-			c->mirror = XNES_CARTRIDGE_MIRROR_SINGLE1;
+			c->mirror = NES_CARTRIDGE_MIRROR_SINGLE1;
 		else
-			c->mirror = XNES_CARTRIDGE_MIRROR_SINGLE0;
+			c->mirror = NES_CARTRIDGE_MIRROR_SINGLE0;
 		break;
 	default:
 		break;
 	}
 }
 
-static uint8_t xnes_mapper7_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper7_ppu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -107,9 +107,9 @@ static uint8_t xnes_mapper7_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper7_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper7_ppu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -138,14 +138,14 @@ static void xnes_mapper7_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8
 /*
  * AxROM
  */
-void xnes_mapper7_init(struct xnes_cartridge_t * c)
+void nes_mapper7_init(struct nes_cartridge_t * c)
 {
 	c->mapper.m.m7.prg_bank = 0;
 
-	c->mapper.cpu_read = xnes_mapper7_cpu_read;
-	c->mapper.cpu_write = xnes_mapper7_cpu_write;
-	c->mapper.ppu_read = xnes_mapper7_ppu_read;
-	c->mapper.ppu_write = xnes_mapper7_ppu_write;
+	c->mapper.cpu_read = nes_mapper7_cpu_read;
+	c->mapper.cpu_write = nes_mapper7_cpu_write;
+	c->mapper.ppu_read = nes_mapper7_ppu_read;
+	c->mapper.ppu_write = nes_mapper7_ppu_write;
 	c->mapper.apu_step = NULL;
 	c->mapper.ppu_step = NULL;
 }

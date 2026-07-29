@@ -1,5 +1,5 @@
 #include "shared.h"
-#include <walnut_cgb.h>
+#include <gb.h>
 
 static int skipFrames = 0;
 static bool slowFrame = false;
@@ -88,11 +88,11 @@ void gbc_main(void) // entrypoint name might be gb_main or gnuboy_main, we'll ke
     };
     app = rg_system_reinit(0, &handlers, NULL);
 
-    updates[0] = rg_surface_create(160, 144, RG_PIXEL_565, MEM_FAST);
-    updates[1] = rg_surface_create(160, 144, RG_PIXEL_565, MEM_FAST);
+    updates[0] = rg_surface_create(160, 144, RG_PIXEL_565_LE, MEM_FAST);
+    updates[1] = rg_surface_create(160, 144, RG_PIXEL_565_LE, MEM_FAST);
     currentUpdate = updates[0];
 
-    priv_data.rom = rg_storage_read_file(app->romPath, &priv_data.rom_size);
+    rg_storage_read_file(app->romPath, (void**)&priv_data.rom, &priv_data.rom_size, 0);
     if (!priv_data.rom) RG_PANIC("ROM load failed.");
 
     priv_data.sram_size = 32768;
@@ -130,6 +130,6 @@ void gbc_main(void) // entrypoint name might be gb_main or gnuboy_main, we'll ke
 
         int frameTime = 1000000 / 60;
         int elapsed = rg_system_timer() - startTime;
-        if (elapsed < frameTime) rg_system_sleep((frameTime - elapsed) / 1000);
+        if (elapsed < frameTime) rg_task_delay((frameTime - elapsed) / 1000);
     }
 }

@@ -1,4 +1,4 @@
-#include "walnut_cgb.h"
+#include "gb.h"
 
 #define IO_JOYP	0x00
 #define IO_SB	0x01

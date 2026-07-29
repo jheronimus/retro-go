@@ -1,25 +1,25 @@
-#ifndef __XNES_DMA_H__
-#define __XNES_DMA_H__
+#ifndef __NES_DMA_H__
+#define __NES_DMA_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <xnesconf.h>
+#include <nesconf.h>
 
-struct xnes_ctx_t;
+struct nes_ctx_t;
 
-struct xnes_dma_t {
-	struct xnes_ctx_t * ctx;
+struct nes_dma_t {
+	struct nes_ctx_t * ctx;
 };
 
-void xnes_dma_init(struct xnes_dma_t * dma, struct xnes_ctx_t * ctx);
-void xnes_dma_reset(struct xnes_dma_t * dma);
-uint8_t xnes_dma_read_register(struct xnes_dma_t * dma, uint16_t addr);
-void xnes_dma_write_register(struct xnes_dma_t * dma, uint16_t addr, uint8_t val);
+void nes_dma_init(struct nes_dma_t * dma, struct nes_ctx_t * ctx);
+void nes_dma_reset(struct nes_dma_t * dma);
+uint8_t nes_dma_read_register(struct nes_dma_t * dma, uint16_t addr);
+void nes_dma_write_register(struct nes_dma_t * dma, uint16_t addr, uint8_t val);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __XNES_DMA_H__ */
+#endif /* __NES_DMA_H__ */

@@ -30,24 +30,24 @@
 #endif
 #endif
 
-#include "z80.h"
+#include "cpu_cores/z80/z80.h"
 #include "sms.h"
 #include "pio.h"
 #include "memz80.h"
 #include "vdp.h"
-#include "sn76489.h"
-#include "ym2413.h"
-#include "fmintf.h"
-#include "sound.h"
+#include "sound/maxim_sn76489/sn76489.h"
+#include "sound/ym2413.h"
+#include "sound/fmintf.h"
+#include "sound/sound.h"
 #include "system.h"
 #include "loadrom.h"
 #include "config.h"
 #include "state.h"
-#include "z80_wrap.h"
-#include "sound_output.h"
+#include "cpu_cores/z80/z80_wrap.h"
+#include "sound_output/sound_output.h"
 
 /* For lock and unlocking screen surface */
-#include "smsplus.h"
+#include "sms.h"
 
 #ifndef NOZIP_SUPPORT
 #include "render.h"

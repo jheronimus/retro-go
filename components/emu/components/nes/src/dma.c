@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-void xnes_dma_init(struct xnes_dma_t * dma, struct xnes_ctx_t * ctx)
+void nes_dma_init(struct nes_dma_t * dma, struct nes_ctx_t * ctx)
 {
 	dma->ctx = ctx;
-	xnes_dma_reset(dma);
+	nes_dma_reset(dma);
 }
 
-void xnes_dma_reset(struct xnes_dma_t * dma)
+void nes_dma_reset(struct nes_dma_t * dma)
 {
 }
 
@@ -38,44 +38,44 @@ static const uint8_t dmc_table[] = {
 	214, 190, 170, 160, 143, 127, 113, 107, 95, 80, 71, 64, 53, 42, 36, 27,
 };
 
-static inline void dmc_write_control(struct xnes_apu_dmc_t * dmc, uint8_t value)
+static inline void dmc_write_control(struct nes_apu_dmc_t * dmc, uint8_t value)
 {
 	dmc->irq = (value & 0x80) ? 1 : 0;
 	dmc->loop = (value & 0x40) ? 1 : 0;
 	dmc->tick_period = dmc_table[value & 0xf];
 }
 
-static inline void dmc_write_value(struct xnes_apu_dmc_t * dmc, uint8_t value)
+static inline void dmc_write_value(struct nes_apu_dmc_t * dmc, uint8_t value)
 {
 	dmc->value = value & 0x7f;
 }
 
-static inline void dmc_write_address(struct xnes_apu_dmc_t * dmc, uint8_t value)
+static inline void dmc_write_address(struct nes_apu_dmc_t * dmc, uint8_t value)
 {
 	dmc->sample_address = 0xc000 | (((uint16_t)value) << 6);
 }
 
-static inline void dmc_write_length(struct xnes_apu_dmc_t * dmc, uint8_t value)
+static inline void dmc_write_length(struct nes_apu_dmc_t * dmc, uint8_t value)
 {
 	dmc->sample_length = (((uint16_t)value) << 4) | 0x1;
 }
 
-static inline void oam_write(struct xnes_dma_t * dma, uint8_t val)
+static inline void oam_write(struct nes_dma_t * dma, uint8_t val)
 {
-	struct xnes_cpu_t * cpu = &dma->ctx->cpu;
+	struct nes_cpu_t * cpu = &dma->ctx->cpu;
 	uint16_t addr = (uint16_t)val << 8;
 
 	for(int i = 0; i < 256; i++)
 	{
-		uint8_t v = xnes_cpu_read8(cpu, addr++);
-		xnes_cpu_write8(cpu, 0x2004, v);
+		uint8_t v = nes_cpu_read8(cpu, addr++);
+		nes_cpu_write8(cpu, 0x2004, v);
 	}
 	cpu->stall += 513;
 	if(cpu->cycles & 0x1)
 		cpu->stall++;
 }
 
-uint8_t xnes_dma_read_register(struct xnes_dma_t * dma, uint16_t addr)
+uint8_t nes_dma_read_register(struct nes_dma_t * dma, uint16_t addr)
 {
 	switch(addr)
 	{
@@ -95,7 +95,7 @@ uint8_t xnes_dma_read_register(struct xnes_dma_t * dma, uint16_t addr)
 	return 0;
 }
 
-void xnes_dma_write_register(struct xnes_dma_t * dma, uint16_t addr, uint8_t val)
+void nes_dma_write_register(struct nes_dma_t * dma, uint16_t addr, uint8_t val)
 {
 	switch(addr)
 	{

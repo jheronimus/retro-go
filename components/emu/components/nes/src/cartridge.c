@@ -22,74 +22,74 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-extern void xnes_mapper0_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper1_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper2_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper3_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper4_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper7_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper15_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper66_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper79_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper87_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper113_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper140_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper177_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper225_init(struct xnes_cartridge_t * c);
-extern void xnes_mapper241_init(struct xnes_cartridge_t * c);
+extern void nes_mapper0_init(struct nes_cartridge_t * c);
+extern void nes_mapper1_init(struct nes_cartridge_t * c);
+extern void nes_mapper2_init(struct nes_cartridge_t * c);
+extern void nes_mapper3_init(struct nes_cartridge_t * c);
+extern void nes_mapper4_init(struct nes_cartridge_t * c);
+extern void nes_mapper7_init(struct nes_cartridge_t * c);
+extern void nes_mapper15_init(struct nes_cartridge_t * c);
+extern void nes_mapper66_init(struct nes_cartridge_t * c);
+extern void nes_mapper79_init(struct nes_cartridge_t * c);
+extern void nes_mapper87_init(struct nes_cartridge_t * c);
+extern void nes_mapper113_init(struct nes_cartridge_t * c);
+extern void nes_mapper140_init(struct nes_cartridge_t * c);
+extern void nes_mapper177_init(struct nes_cartridge_t * c);
+extern void nes_mapper225_init(struct nes_cartridge_t * c);
+extern void nes_mapper241_init(struct nes_cartridge_t * c);
 
-static int xnes_cartridge_mapper_init(struct xnes_cartridge_t * c)
+static int nes_cartridge_mapper_init(struct nes_cartridge_t * c)
 {
 	if(c)
 	{
 		switch(c->mapper_number)
 		{
 		case 0:
-			xnes_mapper0_init(c);
+			nes_mapper0_init(c);
 			return 1;
 		case 1:
-			xnes_mapper1_init(c);
+			nes_mapper1_init(c);
 			return 1;
 		case 2:
-			xnes_mapper2_init(c);
+			nes_mapper2_init(c);
 			return 1;
 		case 3:
-			xnes_mapper3_init(c);
+			nes_mapper3_init(c);
 			return 1;
 		case 4:
-			xnes_mapper4_init(c);
+			nes_mapper4_init(c);
 			return 1;
 		case 7:
-			xnes_mapper7_init(c);
+			nes_mapper7_init(c);
 			return 1;
 		case 15:
-			xnes_mapper15_init(c);
+			nes_mapper15_init(c);
 			return 1;
 		case 66:
-			xnes_mapper66_init(c);
+			nes_mapper66_init(c);
 			return 1;
 		case 79:
-			xnes_mapper79_init(c);
+			nes_mapper79_init(c);
 			return 1;
 		case 87:
-			xnes_mapper87_init(c);
+			nes_mapper87_init(c);
 			return 1;
 		case 113:
-			xnes_mapper113_init(c);
+			nes_mapper113_init(c);
 			return 1;
 		case 140:
-			xnes_mapper140_init(c);
+			nes_mapper140_init(c);
 			return 1;
 		case 177:
-			xnes_mapper177_init(c);
+			nes_mapper177_init(c);
 			return 1;
 		case 225:
-			xnes_mapper225_init(c);
+			nes_mapper225_init(c);
 			return 1;
 		case 241:
-			xnes_mapper241_init(c);
+			nes_mapper241_init(c);
 			return 1;
 		default:
 			break;
@@ -98,7 +98,7 @@ static int xnes_cartridge_mapper_init(struct xnes_cartridge_t * c)
 	return 0;
 }
 
-struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, struct xnes_ctx_t * ctx)
+struct nes_cartridge_t * nes_cartridge_alloc(const void * buf, size_t len, struct nes_ctx_t * ctx)
 {
 	uint8_t * p;
 
@@ -109,30 +109,30 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 	if((p[0] != 'N') || (p[1] != 'E') || (p[2] != 'S') || (p[3] != 0x1a))
 		return NULL;
 
-	struct xnes_cartridge_t * c = xnes_malloc(sizeof(struct xnes_cartridge_t));
+	struct nes_cartridge_t * c = nes_malloc(sizeof(struct nes_cartridge_t));
 	if(!c)
 		return NULL;
 
-	xnes_memset(c, 0, sizeof(struct xnes_cartridge_t));
-	xnes_memcpy(&c->header, buf, 16);
+	nes_memset(c, 0, sizeof(struct nes_cartridge_t));
+	nes_memcpy(&c->header, buf, 16);
 	c->ctx = ctx;
 
 	if(((c->header.flags_7 >> 2) & 0x3) == 0x2)
 	{
 		c->mapper_number = (((c->header.mapper_msb_submapper >> 4) & 0x0f) << 8) | (((c->header.flags_7 >> 4) & 0x0f) << 4) | (((c->header.flags_6 >> 4) & 0x0f) << 0);
 		if((c->header.flags_6 >> 0) & 0x1)
-			c->mirror = XNES_CARTRIDGE_MIRROR_VERTICAL;
+			c->mirror = NES_CARTRIDGE_MIRROR_VERTICAL;
 		else
-			c->mirror = XNES_CARTRIDGE_MIRROR_HORIZONTAL;
+			c->mirror = NES_CARTRIDGE_MIRROR_HORIZONTAL;
 		if((c->header.flags_6 >> 3) & 0x1)
-			c->mirror = XNES_CARTRIDGE_MIRROR_FOUR_SCREEN;
+			c->mirror = NES_CARTRIDGE_MIRROR_FOUR_SCREEN;
 
 		p += 16;
 		if((c->header.flags_6 >> 2) & 0x1)
 		{
 			c->trainer_size = 512;
-			c->trainer = xnes_malloc(c->trainer_size);
-			xnes_memcpy(c->trainer, p, c->trainer_size);
+			c->trainer = nes_malloc(c->trainer_size);
+			nes_memcpy(c->trainer, p, c->trainer_size);
 			p += c->trainer_size;
 		}
 		else
@@ -142,15 +142,15 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		}
 
 		c->prg_rom_size = c->header.prg_rom_size_lsb * 16384;
-		c->prg_rom = xnes_malloc(c->prg_rom_size);
-		xnes_memcpy(c->prg_rom, p, c->prg_rom_size);
+		c->prg_rom = nes_malloc(c->prg_rom_size);
+		nes_memcpy(c->prg_rom, p, c->prg_rom_size);
 		p += c->prg_rom_size;
 
 		if(((c->header.prg_ram_shift_count >> 0) & 0xf) > 0)
 		{
 			c->prg_ram_size = 64 << ((c->header.prg_ram_shift_count >> 0) & 0xf);
-			c->prg_ram = xnes_malloc(c->prg_ram_size);
-			xnes_memset(c->prg_ram, 0, c->prg_ram_size);
+			c->prg_ram = nes_malloc(c->prg_ram_size);
+			nes_memset(c->prg_ram, 0, c->prg_ram_size);
 		}
 		else
 		{
@@ -161,8 +161,8 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		if(((c->header.prg_ram_shift_count >> 4) & 0xf) > 0)
 		{
 			c->prg_nvram_size = 64 << ((c->header.prg_ram_shift_count >> 4) & 0xf);
-			c->prg_nvram = xnes_malloc(c->prg_nvram_size);
-			xnes_memset(c->prg_nvram, 0, c->prg_nvram_size);
+			c->prg_nvram = nes_malloc(c->prg_nvram_size);
+			nes_memset(c->prg_nvram, 0, c->prg_nvram_size);
 		}
 		else
 		{
@@ -171,15 +171,15 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		}
 
 		c->chr_rom_size = c->header.chr_rom_size_lsb * 8192;
-		c->chr_rom = xnes_malloc(c->chr_rom_size);
-		xnes_memcpy(c->chr_rom, p, c->chr_rom_size);
+		c->chr_rom = nes_malloc(c->chr_rom_size);
+		nes_memcpy(c->chr_rom, p, c->chr_rom_size);
 		p += c->chr_rom_size;
 
 		if(((c->header.chr_ram_shift_count >> 0) & 0xf) > 0 )
 		{
 			c->chr_ram_size = 64 << ((c->header.chr_ram_shift_count >> 0) & 0xf);
-			c->chr_ram = xnes_malloc(c->chr_ram_size);
-			xnes_memset(c->chr_ram, 0, c->chr_ram_size);
+			c->chr_ram = nes_malloc(c->chr_ram_size);
+			nes_memset(c->chr_ram, 0, c->chr_ram_size);
 		}
 		else
 		{
@@ -190,8 +190,8 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		if(((c->header.chr_ram_shift_count >> 4) & 0xf) > 0 )
 		{
 			c->chr_nvram_size = 64 << ((c->header.chr_ram_shift_count >> 4) & 0xf);
-			c->chr_nvram = xnes_malloc(c->chr_nvram_size);
-			xnes_memset(c->chr_nvram, 0, c->chr_nvram_size);
+			c->chr_nvram = nes_malloc(c->chr_nvram_size);
+			nes_memset(c->chr_nvram, 0, c->chr_nvram_size);
 		}
 		else
 		{
@@ -202,28 +202,28 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		switch(c->header.cpu_ppu_timing & 0x3)
 		{
 		case 0x0:
-			c->timing = XNES_CARTRIDGE_TIMING_NTSC;
+			c->timing = NES_CARTRIDGE_TIMING_NTSC;
 			c->cpu_rate = 1789773;
 			c->cpu_rate_adjusted = 1789773;
 			c->cpu_period_adjusted = 559;
 			break;
 
 		case 0x1:
-			c->timing = XNES_CARTRIDGE_TIMING_PAL;
+			c->timing = NES_CARTRIDGE_TIMING_PAL;
 			c->cpu_rate = 1662607;
 			c->cpu_rate_adjusted = 1662607;
 			c->cpu_period_adjusted = 601;
 			break;
 
 		case 0x3:
-			c->timing = XNES_CARTRIDGE_TIMING_DENDY;
+			c->timing = NES_CARTRIDGE_TIMING_DENDY;
 			c->cpu_rate = 1773448;
 			c->cpu_rate_adjusted = 1773448;
 			c->cpu_period_adjusted = 564;
 			break;
 
 		default:
-			c->timing = XNES_CARTRIDGE_TIMING_NTSC;
+			c->timing = NES_CARTRIDGE_TIMING_NTSC;
 			c->cpu_rate = 1789773;
 			c->cpu_rate_adjusted = 1789773;
 			c->cpu_period_adjusted = 559;
@@ -234,18 +234,18 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 	{
 		c->mapper_number = (((c->header.flags_7 >> 4) & 0x0f) << 4) | (((c->header.flags_6 >> 4) & 0x0f) << 0);
 		if((c->header.flags_6 >> 0) & 0x1)
-			c->mirror = XNES_CARTRIDGE_MIRROR_VERTICAL;
+			c->mirror = NES_CARTRIDGE_MIRROR_VERTICAL;
 		else
-			c->mirror = XNES_CARTRIDGE_MIRROR_HORIZONTAL;
+			c->mirror = NES_CARTRIDGE_MIRROR_HORIZONTAL;
 		if((c->header.flags_6 >> 3) & 0x1)
-			c->mirror = XNES_CARTRIDGE_MIRROR_FOUR_SCREEN;
+			c->mirror = NES_CARTRIDGE_MIRROR_FOUR_SCREEN;
 
 		p += 16;
 		if((c->header.flags_6 >> 2) & 0x1)
 		{
 			c->trainer_size = 512;
-			c->trainer = xnes_malloc(c->trainer_size);
-			xnes_memcpy(c->trainer, p, c->trainer_size);
+			c->trainer = nes_malloc(c->trainer_size);
+			nes_memcpy(c->trainer, p, c->trainer_size);
 			p += c->trainer_size;
 		}
 		else
@@ -255,8 +255,8 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		}
 
 		c->prg_rom_size = c->header.prg_rom_size_lsb * 16384;
-		c->prg_rom = xnes_malloc(c->prg_rom_size);
-		xnes_memcpy(c->prg_rom, p, c->prg_rom_size);
+		c->prg_rom = nes_malloc(c->prg_rom_size);
+		nes_memcpy(c->prg_rom, p, c->prg_rom_size);
 		p += c->prg_rom_size;
 
 		c->prg_ram_size = 0;
@@ -268,8 +268,8 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 		c->chr_rom_size = c->header.chr_rom_size_lsb * 8192;
 		if(c->chr_rom_size == 0)
 			c->chr_rom_size = 8192;
-		c->chr_rom = xnes_malloc(c->chr_rom_size);
-		xnes_memcpy(c->chr_rom, p, c->chr_rom_size);
+		c->chr_rom = nes_malloc(c->chr_rom_size);
+		nes_memcpy(c->chr_rom, p, c->chr_rom_size);
 		p += c->chr_rom_size;
 
 		c->chr_ram_size = 0;
@@ -280,72 +280,72 @@ struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, str
 
 		if((c->header.prg_chr_rom_size_msb >> 0) & 0x1)
 		{
-			c->timing = XNES_CARTRIDGE_TIMING_PAL;
+			c->timing = NES_CARTRIDGE_TIMING_PAL;
 			c->cpu_rate_adjusted = 1662607;
 			c->cpu_period_adjusted = 601;
 		}
 		else
 		{
-			c->timing = XNES_CARTRIDGE_TIMING_NTSC;
+			c->timing = NES_CARTRIDGE_TIMING_NTSC;
 			c->cpu_rate = 1789773;
 			c->cpu_rate_adjusted = 1789773;
 			c->cpu_period_adjusted = 559;
 		}
 	}
 
-	if(!xnes_cartridge_mapper_init(c))
+	if(!nes_cartridge_mapper_init(c))
 	{
-		xnes_free(c);
+		nes_free(c);
 		return NULL;
 	}
 	return c;
 }
 
-void xnes_cartridge_free(struct xnes_cartridge_t * c)
+void nes_cartridge_free(struct nes_cartridge_t * c)
 {
 	if(c)
 	{
 		if(c->trainer)
-			xnes_free(c->trainer);
+			nes_free(c->trainer);
 		if(c->prg_rom)
-			xnes_free(c->prg_rom);
+			nes_free(c->prg_rom);
 		if(c->chr_rom)
-			xnes_free(c->chr_rom);
+			nes_free(c->chr_rom);
 		if(c->prg_ram)
-			xnes_free(c->prg_ram);
+			nes_free(c->prg_ram);
 		if(c->chr_ram)
-			xnes_free(c->chr_ram);
-		xnes_free(c);
+			nes_free(c->chr_ram);
+		nes_free(c);
 	}
 }
 
-uint8_t xnes_cartridge_mapper_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+uint8_t nes_cartridge_mapper_cpu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
 	return ctx->cartridge->mapper.cpu_read(ctx, addr);
 }
 
-void xnes_cartridge_mapper_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+void nes_cartridge_mapper_cpu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
 	ctx->cartridge->mapper.cpu_write(ctx, addr, val);
 }
 
-uint8_t xnes_cartridge_mapper_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+uint8_t nes_cartridge_mapper_ppu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
 	return ctx->cartridge->mapper.ppu_read(ctx, addr);
 }
 
-void xnes_cartridge_mapper_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+void nes_cartridge_mapper_ppu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
 	ctx->cartridge->mapper.ppu_write(ctx, addr, val);
 }
 
-void xnes_cartridge_mapper_apu_step(struct xnes_ctx_t * ctx)
+void nes_cartridge_mapper_apu_step(struct nes_ctx_t * ctx)
 {
 	if(ctx->cartridge->mapper.apu_step)
 		ctx->cartridge->mapper.apu_step(ctx);
 }
 
-void xnes_cartridge_mapper_ppu_step(struct xnes_ctx_t * ctx)
+void nes_cartridge_mapper_ppu_step(struct nes_ctx_t * ctx)
 {
 	if(ctx->cartridge->mapper.ppu_step)
 		ctx->cartridge->mapper.ppu_step(ctx);

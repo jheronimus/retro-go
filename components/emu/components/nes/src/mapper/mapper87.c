@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-static uint8_t xnes_mapper87_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper87_cpu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -49,9 +49,9 @@ static uint8_t xnes_mapper87_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper87_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper87_cpu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -77,9 +77,9 @@ static void xnes_mapper87_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint
 	}
 }
 
-static uint8_t xnes_mapper87_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper87_ppu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -105,9 +105,9 @@ static uint8_t xnes_mapper87_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper87_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper87_ppu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -136,14 +136,14 @@ static void xnes_mapper87_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint
 /*
  * CNROM
  */
-void xnes_mapper87_init(struct xnes_cartridge_t * c)
+void nes_mapper87_init(struct nes_cartridge_t * c)
 {
 	c->mapper.m.m87.chr_bank = 0;
 
-	c->mapper.cpu_read = xnes_mapper87_cpu_read;
-	c->mapper.cpu_write = xnes_mapper87_cpu_write;
-	c->mapper.ppu_read = xnes_mapper87_ppu_read;
-	c->mapper.ppu_write = xnes_mapper87_ppu_write;
+	c->mapper.cpu_read = nes_mapper87_cpu_read;
+	c->mapper.cpu_write = nes_mapper87_cpu_write;
+	c->mapper.ppu_read = nes_mapper87_ppu_read;
+	c->mapper.ppu_write = nes_mapper87_ppu_write;
 	c->mapper.apu_step = NULL;
 	c->mapper.ppu_step = NULL;
 }

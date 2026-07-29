@@ -1,27 +1,27 @@
-#ifndef __XNES_CPU_H__
-#define __XNES_CPU_H__
+#ifndef __NES_CPU_H__
+#define __NES_CPU_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <xnesconf.h>
+#include <nesconf.h>
 
-struct xnes_ctx_t;
+struct nes_ctx_t;
 
 enum {
-	XNES_CPU_P_C	= (1 << 0),	/* carry */
-	XNES_CPU_P_Z	= (1 << 1),	/* zero */
-	XNES_CPU_P_I	= (1 << 2),	/* interrupt */
-	XNES_CPU_P_D	= (1 << 3),	/* decimal */
-	XNES_CPU_P_B	= (1 << 4),	/* break */
-	XNES_CPU_P_U	= (1 << 5),	/* unused */
-	XNES_CPU_P_V	= (1 << 6),	/* overflow */
-	XNES_CPU_P_N	= (1 << 7),	/* negative */
+	NES_CPU_P_C	= (1 << 0),	/* carry */
+	NES_CPU_P_Z	= (1 << 1),	/* zero */
+	NES_CPU_P_I	= (1 << 2),	/* interrupt */
+	NES_CPU_P_D	= (1 << 3),	/* decimal */
+	NES_CPU_P_B	= (1 << 4),	/* break */
+	NES_CPU_P_U	= (1 << 5),	/* unused */
+	NES_CPU_P_V	= (1 << 6),	/* overflow */
+	NES_CPU_P_N	= (1 << 7),	/* negative */
 };
 
-struct xnes_cpu_t {
-	struct xnes_ctx_t * ctx;
+struct nes_cpu_t {
+	struct nes_ctx_t * ctx;
 
 	uint8_t ram[2048];
 	uint64_t cycles;
@@ -37,19 +37,19 @@ struct xnes_cpu_t {
 	/*
 	 * debugger callback, cpu will be paused when return true.
 	 */
-	int (*debugger)(struct xnes_ctx_t *);
+	int (*debugger)(struct nes_ctx_t *);
 };
 
-void xnes_cpu_init(struct xnes_cpu_t * cpu, struct xnes_ctx_t * ctx);
-void xnes_cpu_reset(struct xnes_cpu_t * cpu);
-uint8_t xnes_cpu_read8(struct xnes_cpu_t * cpu, uint16_t addr);
-void xnes_cpu_write8(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t val);
-void xnes_cpu_trigger_nmi(struct xnes_cpu_t * cpu);
-void xnes_cpu_trigger_irq(struct xnes_cpu_t * cpu);
-int xnes_cpu_step(struct xnes_cpu_t * cpu);
+void nes_cpu_init(struct nes_cpu_t * cpu, struct nes_ctx_t * ctx);
+void nes_cpu_reset(struct nes_cpu_t * cpu);
+uint8_t nes_cpu_read8(struct nes_cpu_t * cpu, uint16_t addr);
+void nes_cpu_write8(struct nes_cpu_t * cpu, uint16_t addr, uint8_t val);
+void nes_cpu_trigger_nmi(struct nes_cpu_t * cpu);
+void nes_cpu_trigger_irq(struct nes_cpu_t * cpu);
+int nes_cpu_step(struct nes_cpu_t * cpu);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __XNES_CPU_H__ */
+#endif /* __NES_CPU_H__ */

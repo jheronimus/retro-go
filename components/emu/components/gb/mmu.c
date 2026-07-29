@@ -1,4 +1,4 @@
-#include "walnut_cgb.h"
+#include "gb.h"
 #if WALNUT_GB_16BIT_ALIGNED
 uint16_t __gb_read16(struct gb_s *gb, uint16_t addr)
 {

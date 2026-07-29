@@ -1,15 +1,15 @@
-#ifndef __XNES_APU_H__
-#define __XNES_APU_H__
+#ifndef __NES_APU_H__
+#define __NES_APU_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <xnesconf.h>
+#include <nesconf.h>
 
-struct xnes_ctx_t;
+struct nes_ctx_t;
 
-struct xnes_apu_pulse_t {
+struct nes_apu_pulse_t {
 	char enabled;
 	uint8_t channel;
 	char length_enabled;
@@ -33,7 +33,7 @@ struct xnes_apu_pulse_t {
 	uint8_t constant_volume;
 };
 
-struct xnes_apu_triangle_t {
+struct nes_apu_triangle_t {
 	char enabled;
 	char length_enabled;
 	uint8_t length_value;
@@ -45,7 +45,7 @@ struct xnes_apu_triangle_t {
 	char counter_reload;
 };
 
-struct xnes_apu_noise_t {
+struct nes_apu_noise_t {
 	char enabled;
 	char mode;
 	uint16_t shift_register;
@@ -62,8 +62,8 @@ struct xnes_apu_noise_t {
 	uint8_t constant_volume;
 };
 
-struct xnes_apu_dmc_t {
-	struct xnes_ctx_t * ctx;
+struct nes_apu_dmc_t {
+	struct nes_ctx_t * ctx;
 
 	uint16_t sample_address;
 	uint16_t sample_length;
@@ -79,28 +79,28 @@ struct xnes_apu_dmc_t {
 	char irq;
 };
 
-struct xnes_apu_t {
-	struct xnes_ctx_t * ctx;
+struct nes_apu_t {
+	struct nes_ctx_t * ctx;
 
-	struct xnes_apu_pulse_t pulse1;
-	struct xnes_apu_pulse_t pulse2;
-	struct xnes_apu_triangle_t triangle;
-	struct xnes_apu_noise_t noise;
-	struct xnes_apu_dmc_t dmc;
+	struct nes_apu_pulse_t pulse1;
+	struct nes_apu_pulse_t pulse2;
+	struct nes_apu_triangle_t triangle;
+	struct nes_apu_noise_t noise;
+	struct nes_apu_dmc_t dmc;
 	uint64_t cycles;
 	uint8_t frame_period;
 	uint8_t frame_value;
 	char frame_irq;
 };
 
-void xnes_apu_init(struct xnes_apu_t * apu, struct xnes_ctx_t * ctx);
-void xnes_apu_reset(struct xnes_apu_t * apu);
-void xnes_apu_step(struct xnes_apu_t * apu);
-uint8_t xnes_apu_read_register(struct xnes_apu_t * apu, uint16_t addr);
-void xnes_apu_write_register(struct xnes_apu_t * apu, uint16_t addr, uint8_t val);
+void nes_apu_init(struct nes_apu_t * apu, struct nes_ctx_t * ctx);
+void nes_apu_reset(struct nes_apu_t * apu);
+void nes_apu_step(struct nes_apu_t * apu);
+uint8_t nes_apu_read_register(struct nes_apu_t * apu, uint16_t addr);
+void nes_apu_write_register(struct nes_apu_t * apu, uint16_t addr, uint8_t val);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __XNES_APU_H__ */
+#endif /* __NES_APU_H__ */

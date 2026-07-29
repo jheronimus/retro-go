@@ -1,30 +1,30 @@
-#ifndef __XNES_CARTRIDGE_H__
-#define __XNES_CARTRIDGE_H__
+#ifndef __NES_CARTRIDGE_H__
+#define __NES_CARTRIDGE_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <xnesconf.h>
+#include <nesconf.h>
 
-struct xnes_ctx_t;
+struct nes_ctx_t;
 
 enum {
-	XNES_CARTRIDGE_MIRROR_HORIZONTAL	= 0,
-	XNES_CARTRIDGE_MIRROR_VERTICAL		= 1,
-	XNES_CARTRIDGE_MIRROR_FOUR_SCREEN	= 2,
-	XNES_CARTRIDGE_MIRROR_SINGLE0		= 3,
-	XNES_CARTRIDGE_MIRROR_SINGLE1		= 4,
+	NES_CARTRIDGE_MIRROR_HORIZONTAL	= 0,
+	NES_CARTRIDGE_MIRROR_VERTICAL		= 1,
+	NES_CARTRIDGE_MIRROR_FOUR_SCREEN	= 2,
+	NES_CARTRIDGE_MIRROR_SINGLE0		= 3,
+	NES_CARTRIDGE_MIRROR_SINGLE1		= 4,
 };
 
 enum {
-	XNES_CARTRIDGE_TIMING_NTSC			= 0,
-	XNES_CARTRIDGE_TIMING_PAL			= 1,
-	XNES_CARTRIDGE_TIMING_DENDY			= 2,
+	NES_CARTRIDGE_TIMING_NTSC			= 0,
+	NES_CARTRIDGE_TIMING_PAL			= 1,
+	NES_CARTRIDGE_TIMING_DENDY			= 2,
 };
 
-struct xnes_cartridge_t {
-	struct xnes_ctx_t * ctx;
+struct nes_cartridge_t {
+	struct nes_ctx_t * ctx;
 
 	struct {
 		uint8_t magic[4];
@@ -67,12 +67,12 @@ struct xnes_cartridge_t {
 	uint8_t sram[8192];
 
 	struct {
-		uint8_t (*cpu_read)(struct xnes_ctx_t * ctx, uint16_t addr);
-		void (*cpu_write)(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val);
-		uint8_t (*ppu_read)(struct xnes_ctx_t * ctx, uint16_t addr);
-		void (*ppu_write)(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val);
-		void (*apu_step)(struct xnes_ctx_t * ctx);
-		void (*ppu_step)(struct xnes_ctx_t * ctx);
+		uint8_t (*cpu_read)(struct nes_ctx_t * ctx, uint16_t addr);
+		void (*cpu_write)(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val);
+		uint8_t (*ppu_read)(struct nes_ctx_t * ctx, uint16_t addr);
+		void (*ppu_write)(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val);
+		void (*apu_step)(struct nes_ctx_t * ctx);
+		void (*ppu_step)(struct nes_ctx_t * ctx);
 
 		union {
 			struct {
@@ -149,17 +149,17 @@ struct xnes_cartridge_t {
 	} mapper;
 };
 
-struct xnes_cartridge_t * xnes_cartridge_alloc(const void * buf, size_t len, struct xnes_ctx_t * ctx);
-void xnes_cartridge_free(struct xnes_cartridge_t * c);
-uint8_t xnes_cartridge_mapper_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr);
-void xnes_cartridge_mapper_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val);
-uint8_t xnes_cartridge_mapper_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr);
-void xnes_cartridge_mapper_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val);
-void xnes_cartridge_mapper_apu_step(struct xnes_ctx_t * ctx);
-void xnes_cartridge_mapper_ppu_step(struct xnes_ctx_t * ctx);
+struct nes_cartridge_t * nes_cartridge_alloc(const void * buf, size_t len, struct nes_ctx_t * ctx);
+void nes_cartridge_free(struct nes_cartridge_t * c);
+uint8_t nes_cartridge_mapper_cpu_read(struct nes_ctx_t * ctx, uint16_t addr);
+void nes_cartridge_mapper_cpu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val);
+uint8_t nes_cartridge_mapper_ppu_read(struct nes_ctx_t * ctx, uint16_t addr);
+void nes_cartridge_mapper_ppu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val);
+void nes_cartridge_mapper_apu_step(struct nes_ctx_t * ctx);
+void nes_cartridge_mapper_ppu_step(struct nes_ctx_t * ctx);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __XNES_CARTRIDGE_H__ */
+#endif /* __NES_CARTRIDGE_H__ */

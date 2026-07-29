@@ -51,10 +51,6 @@ typedef struct
 } snd_t;
 
 
-#ifndef SOUND_FREQUENCY
-#define SOUND_FREQUENCY 44100
-#endif
-
 /* Global data */
 extern snd_t snd;
 

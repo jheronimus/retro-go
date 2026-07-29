@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-static uint8_t xnes_mapper225_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper225_cpu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -50,9 +50,9 @@ static uint8_t xnes_mapper225_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper225_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper225_cpu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 	int bank, prg;
 
 	switch(addr >> 13)
@@ -84,18 +84,18 @@ static void xnes_mapper225_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uin
 			c->mapper.m.m225.prg_bank1 = prg + 1;
 		}
 		if((addr >> 13) & 0x1)
-			c->mirror = XNES_CARTRIDGE_MIRROR_HORIZONTAL;
+			c->mirror = NES_CARTRIDGE_MIRROR_HORIZONTAL;
 		else
-			c->mirror = XNES_CARTRIDGE_MIRROR_VERTICAL;
+			c->mirror = NES_CARTRIDGE_MIRROR_VERTICAL;
 		break;
 	default:
 		break;
 	}
 }
 
-static uint8_t xnes_mapper225_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper225_ppu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -121,9 +121,9 @@ static uint8_t xnes_mapper225_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper225_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper225_ppu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -152,17 +152,17 @@ static void xnes_mapper225_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uin
 /*
  * BMC 58/64/72-IN-1
  */
-void xnes_mapper225_init(struct xnes_cartridge_t * c)
+void nes_mapper225_init(struct nes_cartridge_t * c)
 {
 	c->mapper.m.m225.chr_bank = 0;
 	c->mapper.m.m225.prg_banks = c->prg_rom_size >> 14;
 	c->mapper.m.m225.prg_bank0 = 0;
 	c->mapper.m.m225.prg_bank1 = c->mapper.m.m225.prg_banks - 1;
 
-	c->mapper.cpu_read = xnes_mapper225_cpu_read;
-	c->mapper.cpu_write = xnes_mapper225_cpu_write;
-	c->mapper.ppu_read = xnes_mapper225_ppu_read;
-	c->mapper.ppu_write = xnes_mapper225_ppu_write;
+	c->mapper.cpu_read = nes_mapper225_cpu_read;
+	c->mapper.cpu_write = nes_mapper225_cpu_write;
+	c->mapper.ppu_read = nes_mapper225_ppu_read;
+	c->mapper.ppu_write = nes_mapper225_ppu_write;
 	c->mapper.apu_step = NULL;
 	c->mapper.ppu_step = NULL;
 }

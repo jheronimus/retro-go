@@ -3,10 +3,9 @@ set(COMPONENT_REQUIRES "shared")
 set(COMPONENT_SRCS 
 ppu.c
 cpu.c
-walnut_cgb_impl.c
+gb_impl.c
 mapper/dummy.c
 core.c
-tmp.c
 mmu.c
 )
 register_component()

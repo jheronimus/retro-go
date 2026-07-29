@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
 static const uint16_t mirror_lookup[5][4] = {
 	{ 0, 0, 1, 1 },
@@ -40,30 +40,30 @@ static inline uint16_t mirror_address(uint8_t mode, uint16_t addr)
 	return 0x2000 + (mirror_lookup[mode][table] << 10) + offset;
 }
 
-static inline uint8_t ppu_read_palette(struct xnes_ppu_t * ppu, uint16_t addr)
+static inline uint8_t ppu_read_palette(struct nes_ppu_t * ppu, uint16_t addr)
 {
 	if((addr >= 16) && ((addr & 0x3) == 0))
 		addr -= 16;
 	return ppu->palette_data[addr];
 }
 
-static inline void ppu_write_palette(struct xnes_ppu_t * ppu, uint16_t addr, uint8_t val)
+static inline void ppu_write_palette(struct nes_ppu_t * ppu, uint16_t addr, uint8_t val)
 {
 	if((addr >= 16) && ((addr & 0x3) == 0))
 		addr -= 16;
 	ppu->palette_data[addr] = val;
 }
 
-static uint8_t ppu_read8(struct xnes_ppu_t * ppu, uint16_t addr)
+static uint8_t ppu_read8(struct nes_ppu_t * ppu, uint16_t addr)
 {
-	struct xnes_ctx_t * ctx = ppu->ctx;
+	struct nes_ctx_t * ctx = ppu->ctx;
 
 	addr &= 0x3fff;
 	switch(addr >> 13)
 	{
 	/* [0x0000, 0x1FFF] */
 	case 0:
-		return xnes_cartridge_mapper_ppu_read(ctx, addr);
+		return nes_cartridge_mapper_ppu_read(ctx, addr);
 
 	/* [0x2000, 0x3FFF] */
 	case 1:
@@ -84,16 +84,16 @@ static uint8_t ppu_read8(struct xnes_ppu_t * ppu, uint16_t addr)
 	return 0;
 }
 
-static void ppu_write8(struct xnes_ppu_t * ppu, uint16_t addr, uint8_t val)
+static void ppu_write8(struct nes_ppu_t * ppu, uint16_t addr, uint8_t val)
 {
-	struct xnes_ctx_t * ctx = ppu->ctx;
+	struct nes_ctx_t * ctx = ppu->ctx;
 
 	addr &= 0x3fff;
 	switch(addr >> 13)
 	{
 	/* [0x0000, 0x1FFF] */
 	case 0:
-		xnes_cartridge_mapper_ppu_write(ctx, addr, val);
+		nes_cartridge_mapper_ppu_write(ctx, addr, val);
 		break;
 
 	/* [0x2000, 0x3FFF] */
@@ -116,7 +116,7 @@ static void ppu_write8(struct xnes_ppu_t * ppu, uint16_t addr, uint8_t val)
 	}
 }
 
-static void ppu_nmi_change(struct xnes_ppu_t * ppu)
+static void ppu_nmi_change(struct nes_ppu_t * ppu)
 {
 	uint8_t nmi = ppu->nmi_output && ppu->nmi_occurred;
 	if(nmi && !ppu->nmi_previous)
@@ -124,7 +124,7 @@ static void ppu_nmi_change(struct xnes_ppu_t * ppu)
 	ppu->nmi_previous = nmi;
 }
 
-static void ppu_write_control(struct xnes_ppu_t * ppu, uint8_t val)
+static void ppu_write_control(struct nes_ppu_t * ppu, uint8_t val)
 {
 	ppu->flag_name_table = (val >> 0) & 3;
 	ppu->flag_increment = (val >> 2) & 1;
@@ -137,7 +137,7 @@ static void ppu_write_control(struct xnes_ppu_t * ppu, uint8_t val)
 	ppu->t = (ppu->t & 0xF3FF) | (((uint16_t)(val) & 0x03) << 10);
 }
 
-static void ppu_write_mask(struct xnes_ppu_t * ppu, uint8_t val)
+static void ppu_write_mask(struct nes_ppu_t * ppu, uint8_t val)
 {
 	ppu->flag_grayscale = (val >> 0) & 1;
 	ppu->flag_show_left_background = (val >> 1) & 1;
@@ -149,12 +149,12 @@ static void ppu_write_mask(struct xnes_ppu_t * ppu, uint8_t val)
 	ppu->flag_blue_tint = (val >> 7) & 1;
 }
 
-static inline void ppu_write_oam_address(struct xnes_ppu_t * ppu, uint8_t val)
+static inline void ppu_write_oam_address(struct nes_ppu_t * ppu, uint8_t val)
 {
 	ppu->oam_address = val;
 }
 
-static uint8_t ppu_read_status(struct xnes_ppu_t * ppu)
+static uint8_t ppu_read_status(struct nes_ppu_t * ppu)
 {
 	uint8_t result = ppu->reg & 0x1F;
 	result |= ppu->flag_sprite_overflow << 5;
@@ -167,7 +167,7 @@ static uint8_t ppu_read_status(struct xnes_ppu_t * ppu)
 	return result;
 }
 
-static uint8_t ppu_read_oam_data(struct xnes_ppu_t * ppu)
+static uint8_t ppu_read_oam_data(struct nes_ppu_t * ppu)
 {
 	uint8_t data = ppu->oam_data[ppu->oam_address];
 	if((ppu->oam_address & 0x03) == 0x02)
@@ -175,13 +175,13 @@ static uint8_t ppu_read_oam_data(struct xnes_ppu_t * ppu)
 	return data;
 }
 
-static void ppu_write_oam_data(struct xnes_ppu_t * ppu , uint8_t val)
+static void ppu_write_oam_data(struct nes_ppu_t * ppu , uint8_t val)
 {
 	ppu->oam_data[ppu->oam_address] = val;
 	ppu->oam_address++;
 }
 
-static void ppu_write_scroll(struct xnes_ppu_t * ppu, uint8_t val)
+static void ppu_write_scroll(struct nes_ppu_t * ppu, uint8_t val)
 {
 	if(ppu->w == 0)
 	{
@@ -197,7 +197,7 @@ static void ppu_write_scroll(struct xnes_ppu_t * ppu, uint8_t val)
 	}
 }
 
-static void ppu_write_address(struct xnes_ppu_t * ppu, uint8_t val)
+static void ppu_write_address(struct nes_ppu_t * ppu, uint8_t val)
 {
 	if(ppu->w == 0)
 	{
@@ -212,7 +212,7 @@ static void ppu_write_address(struct xnes_ppu_t * ppu, uint8_t val)
 	}
 }
 
-static uint8_t ppu_read_data(struct xnes_ppu_t * ppu)
+static uint8_t ppu_read_data(struct nes_ppu_t * ppu)
 {
 	uint8_t val = ppu_read8(ppu, ppu->v);
 	if((ppu->v % 0x4000) < 0x3F00)
@@ -230,7 +230,7 @@ static uint8_t ppu_read_data(struct xnes_ppu_t * ppu)
 	return val;
 }
 
-static void ppu_write_data(struct xnes_ppu_t * ppu, uint8_t val)
+static void ppu_write_data(struct nes_ppu_t * ppu, uint8_t val)
 {
 	ppu_write8(ppu, ppu->v, val);
 	if(ppu->flag_increment == 0)
@@ -239,7 +239,7 @@ static void ppu_write_data(struct xnes_ppu_t * ppu, uint8_t val)
 		ppu->v += 32;
 }
 
-static void ppu_increment_x(struct xnes_ppu_t * ppu)
+static void ppu_increment_x(struct nes_ppu_t * ppu)
 {
 	if((ppu->v & 0x001F) == 31)
 	{
@@ -250,7 +250,7 @@ static void ppu_increment_x(struct xnes_ppu_t * ppu)
 		ppu->v++;
 }
 
-static void ppu_increment_y(struct xnes_ppu_t * ppu)
+static void ppu_increment_y(struct nes_ppu_t * ppu)
 {
 	if((ppu->v & 0x7000) != 0x7000)
 		ppu->v += 0x1000;
@@ -271,17 +271,17 @@ static void ppu_increment_y(struct xnes_ppu_t * ppu)
 	}
 }
 
-static void ppu_copy_x(struct xnes_ppu_t * ppu)
+static void ppu_copy_x(struct nes_ppu_t * ppu)
 {
 	ppu->v = (ppu->v & 0xFBE0) | (ppu->t & 0x041F);
 }
 
-static void ppu_copy_y(struct xnes_ppu_t * ppu)
+static void ppu_copy_y(struct nes_ppu_t * ppu)
 {
 	ppu->v = (ppu->v & 0x841F) | (ppu->t & 0x7BE0);
 }
 
-static void ppu_set_vertical_blank(struct xnes_ppu_t * ppu)
+static void ppu_set_vertical_blank(struct nes_ppu_t * ppu)
 {
 	uint8_t * p = ppu->front;
 	ppu->front = ppu->back;
@@ -290,20 +290,20 @@ static void ppu_set_vertical_blank(struct xnes_ppu_t * ppu)
 	ppu_nmi_change(ppu);
 }
 
-static void ppu_clear_vertical_blank(struct xnes_ppu_t * ppu)
+static void ppu_clear_vertical_blank(struct nes_ppu_t * ppu)
 {
 	ppu->nmi_occurred = 0;
 	ppu_nmi_change(ppu);
 }
 
-static void ppu_fetch_name_table_byte(struct xnes_ppu_t * ppu)
+static void ppu_fetch_name_table_byte(struct nes_ppu_t * ppu)
 {
 	uint16_t v = ppu->v;
 	uint16_t addr = 0x2000 | (v & 0x0FFF);
 	ppu->name_table_byte = ppu_read8(ppu, addr);
 }
 
-static void ppu_fetch_attribute_table_byte(struct xnes_ppu_t * ppu)
+static void ppu_fetch_attribute_table_byte(struct nes_ppu_t * ppu)
 {
 	uint16_t v = ppu->v;
 	uint16_t addr = 0x23C0 | (v & 0x0C00) | ((v >> 4) & 0x38) | ((v >> 2) & 0x07);
@@ -311,7 +311,7 @@ static void ppu_fetch_attribute_table_byte(struct xnes_ppu_t * ppu)
 	ppu->attributeTableByte = ((ppu_read8(ppu, addr) >> shift) & 3) << 2;
 }
 
-static void ppu_fetch_low_tile_byte(struct xnes_ppu_t * ppu)
+static void ppu_fetch_low_tile_byte(struct nes_ppu_t * ppu)
 {
 	uint16_t fine_y = (ppu->v >> 12) & 7;
 	uint8_t table = ppu->flag_background_table;
@@ -320,7 +320,7 @@ static void ppu_fetch_low_tile_byte(struct xnes_ppu_t * ppu)
 	ppu->low_tile_byte = ppu_read8(ppu, addr);
 }
 
-static void ppu_fetch_high_tile_byte(struct xnes_ppu_t * ppu)
+static void ppu_fetch_high_tile_byte(struct nes_ppu_t * ppu)
 {
 	uint16_t fine_y = (ppu->v >> 12) & 7;
 	uint8_t table = ppu->flag_background_table;
@@ -329,7 +329,7 @@ static void ppu_fetch_high_tile_byte(struct xnes_ppu_t * ppu)
 	ppu->high_tile_byte = ppu_read8(ppu, addr + 8);
 }
 
-static void ppu_store_tile_data(struct xnes_ppu_t * ppu)
+static void ppu_store_tile_data(struct nes_ppu_t * ppu)
 {
 	uint32_t data = 0;
 	for(int i = 0; i < 8; i++)
@@ -345,12 +345,12 @@ static void ppu_store_tile_data(struct xnes_ppu_t * ppu)
 	ppu->tile_data |= (uint64_t)data;
 }
 
-static uint32_t ppu_fetch_tile_data(struct xnes_ppu_t * ppu)
+static uint32_t ppu_fetch_tile_data(struct nes_ppu_t * ppu)
 {
 	return (uint32_t)(ppu->tile_data >> 32);
 }
 
-static uint8_t ppu_background_pixel(struct xnes_ppu_t * ppu)
+static uint8_t ppu_background_pixel(struct nes_ppu_t * ppu)
 {
 	if(ppu->flag_show_background == 0)
 		return 0;
@@ -358,7 +358,7 @@ static uint8_t ppu_background_pixel(struct xnes_ppu_t * ppu)
 	return (uint8_t)(data & 0x0F);
 }
 
-static void ppu_sprite_pixel(struct xnes_ppu_t * ppu, uint8_t * a, uint8_t * b)
+static void ppu_sprite_pixel(struct nes_ppu_t * ppu, uint8_t * a, uint8_t * b)
 {
 	if(ppu->flag_show_sprites == 0)
 	{
@@ -383,7 +383,7 @@ static void ppu_sprite_pixel(struct xnes_ppu_t * ppu, uint8_t * a, uint8_t * b)
 	*b = 0;
 }
 
-static void ppu_render_pixel(struct xnes_ppu_t * ppu)
+static void ppu_render_pixel(struct nes_ppu_t * ppu)
 {
 	int x = ppu->cycles - 1;
 	int y = ppu->scanline;
@@ -415,7 +415,7 @@ static void ppu_render_pixel(struct xnes_ppu_t * ppu)
 	ppu->back[256 * y + x] = ppu_read_palette(ppu, (uint16_t)color) & 0x3f;
 }
 
-static uint32_t ppu_fetch_sprite_pattern(struct xnes_ppu_t * ppu, int i, int row)
+static uint32_t ppu_fetch_sprite_pattern(struct nes_ppu_t * ppu, int i, int row)
 {
 	uint8_t tile = ppu->oam_data[i * 4 + 1];
 	uint8_t attributes = ppu->oam_data[i * 4 + 2];
@@ -467,7 +467,7 @@ static uint32_t ppu_fetch_sprite_pattern(struct xnes_ppu_t * ppu, int i, int row
 	return data;
 }
 
-static void ppu_evaluate_sprites(struct xnes_ppu_t * ppu)
+static void ppu_evaluate_sprites(struct nes_ppu_t * ppu)
 {
 	int h;
 	if(ppu->flag_sprite_size == 0)
@@ -500,13 +500,13 @@ static void ppu_evaluate_sprites(struct xnes_ppu_t * ppu)
 	ppu->sprite_count = count;
 }
 
-static void ppu_tick(struct xnes_ppu_t * ppu)
+static void ppu_tick(struct nes_ppu_t * ppu)
 {
 	if(ppu->nmi_delay > 0)
 	{
 		ppu->nmi_delay--;
 		if((ppu->nmi_delay == 0) && ppu->nmi_output && ppu->nmi_occurred)
-			xnes_cpu_trigger_nmi(&ppu->ctx->cpu);
+			nes_cpu_trigger_nmi(&ppu->ctx->cpu);
 	}
 
 	if(ppu->flag_show_background != 0 || ppu->flag_show_sprites != 0)
@@ -534,7 +534,7 @@ static void ppu_tick(struct xnes_ppu_t * ppu)
 	}
 }
 
-static void ppu_step(struct xnes_ppu_t * ppu)
+static void ppu_step(struct nes_ppu_t * ppu)
 {
 	ppu_tick(ppu);
 
@@ -608,15 +608,15 @@ static void ppu_step(struct xnes_ppu_t * ppu)
 	}
 }
 
-void xnes_ppu_init(struct xnes_ppu_t * ppu, struct xnes_ctx_t * ctx)
+void nes_ppu_init(struct nes_ppu_t * ppu, struct nes_ctx_t * ctx)
 {
 	ppu->ctx = ctx;
 	ppu->front = &ppu->front_buf[0];
 	ppu->back = &ppu->back_buf[0];
-	xnes_ppu_reset(ppu);
+	nes_ppu_reset(ppu);
 }
 
-void xnes_ppu_reset(struct xnes_ppu_t * ppu)
+void nes_ppu_reset(struct nes_ppu_t * ppu)
 {
 	ppu->cycles = 340;
 	ppu->scanline = 240;
@@ -626,13 +626,13 @@ void xnes_ppu_reset(struct xnes_ppu_t * ppu)
 	ppu_write_oam_address(ppu, 0);
 }
 
-void xnes_ppu_step(struct xnes_ppu_t * ppu)
+void nes_ppu_step(struct nes_ppu_t * ppu)
 {
 	ppu_step(ppu);
-	xnes_cartridge_mapper_ppu_step(ppu->ctx);
+	nes_cartridge_mapper_ppu_step(ppu->ctx);
 }
 
-uint8_t xnes_ppu_read_register(struct xnes_ppu_t * ppu, uint16_t addr)
+uint8_t nes_ppu_read_register(struct nes_ppu_t * ppu, uint16_t addr)
 {
 	switch(addr)
 	{
@@ -658,7 +658,7 @@ uint8_t xnes_ppu_read_register(struct xnes_ppu_t * ppu, uint16_t addr)
 	return 0;
 }
 
-void xnes_ppu_write_register(struct xnes_ppu_t * ppu, uint16_t addr, uint8_t val)
+void nes_ppu_write_register(struct nes_ppu_t * ppu, uint16_t addr, uint8_t val)
 {
 	ppu->reg = val;
 	switch(addr)
@@ -691,7 +691,7 @@ void xnes_ppu_write_register(struct xnes_ppu_t * ppu, uint16_t addr, uint8_t val
 	}
 }
 
-uint8_t xnes_ppu_is_white_pixel(struct xnes_ppu_t * ppu, int x, int y)
+uint8_t nes_ppu_is_white_pixel(struct nes_ppu_t * ppu, int x, int y)
 {
 	return (ppu->front[(y << 8) + x] == 0x30) ? 1 : 0;
 }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
 static const uint8_t length_table[] = {
 	10, 254, 20, 2, 40, 4, 80, 6, 160, 8, 60, 10, 14, 12, 26, 14,
@@ -48,7 +48,7 @@ static const uint16_t noise_table[] = {
 
 
 
-static inline void pulse_write_control(struct xnes_apu_pulse_t * p, uint8_t value)
+static inline void pulse_write_control(struct nes_apu_pulse_t * p, uint8_t value)
 {
 	p->duty_mode = (value >> 6) & 3;
 	p->length_enabled = (value & 0x20) == 0;
@@ -58,7 +58,7 @@ static inline void pulse_write_control(struct xnes_apu_pulse_t * p, uint8_t valu
 	p->envelope_volume = value & 0x0F;
 }
 
-static inline void pulse_write_sweep(struct xnes_apu_pulse_t * p, uint8_t value)
+static inline void pulse_write_sweep(struct nes_apu_pulse_t * p, uint8_t value)
 {
 	p->sweep_enabled = (value & 0x80) != 0;
 	p->sweep_period = ((value >> 4) & 0x07) + 1;
@@ -67,12 +67,12 @@ static inline void pulse_write_sweep(struct xnes_apu_pulse_t * p, uint8_t value)
 	p->sweep_reload = 1;
 }
 
-static inline void pulse_write_timer_low(struct xnes_apu_pulse_t * p, uint8_t value)
+static inline void pulse_write_timer_low(struct nes_apu_pulse_t * p, uint8_t value)
 {
 	p->timer_period = (p->timer_period & 0xFF00) | value;
 }
 
-static inline void pulse_write_timer_high(struct xnes_apu_pulse_t * p, uint8_t value)
+static inline void pulse_write_timer_high(struct nes_apu_pulse_t * p, uint8_t value)
 {
 	if(p->enabled)
 		p->length_value = length_table[value >> 3];
@@ -81,7 +81,7 @@ static inline void pulse_write_timer_high(struct xnes_apu_pulse_t * p, uint8_t v
 	p->duty_value = 0;
 }
 
-static inline void pulse_step_timer(struct xnes_apu_pulse_t * p)
+static inline void pulse_step_timer(struct nes_apu_pulse_t * p)
 {
 	if(p->timer_value == 0)
 	{
@@ -92,7 +92,7 @@ static inline void pulse_step_timer(struct xnes_apu_pulse_t * p)
 		p->timer_value--;
 }
 
-static inline void pulse_step_envelope(struct xnes_apu_pulse_t * p)
+static inline void pulse_step_envelope(struct nes_apu_pulse_t * p)
 {
 	if(p->envelope_start)
 	{
@@ -114,7 +114,7 @@ static inline void pulse_step_envelope(struct xnes_apu_pulse_t * p)
 	}
 }
 
-static inline void pulse_sweep(struct xnes_apu_pulse_t * p)
+static inline void pulse_sweep(struct nes_apu_pulse_t * p)
 {
 	uint16_t delta = p->timer_period >> p->sweep_shift;
 	if(p->sweep_negate)
@@ -127,7 +127,7 @@ static inline void pulse_sweep(struct xnes_apu_pulse_t * p)
 		p->timer_period += delta;
 }
 
-static inline void pulse_step_sweep(struct xnes_apu_pulse_t * p)
+static inline void pulse_step_sweep(struct nes_apu_pulse_t * p)
 {
 	if(p->sweep_reload)
 	{
@@ -148,13 +148,13 @@ static inline void pulse_step_sweep(struct xnes_apu_pulse_t * p)
 	}
 }
 
-static inline void pulse_step_length(struct xnes_apu_pulse_t * p)
+static inline void pulse_step_length(struct nes_apu_pulse_t * p)
 {
 	if(p->length_enabled && (p->length_value > 0))
 		p->length_value--;
 }
 
-static inline uint8_t pulse_output(struct xnes_apu_pulse_t * p)
+static inline uint8_t pulse_output(struct nes_apu_pulse_t * p)
 {
 	if(!p->enabled)
 		return 0;
@@ -170,18 +170,18 @@ static inline uint8_t pulse_output(struct xnes_apu_pulse_t * p)
 		return p->constant_volume;
 }
 
-static inline void triangle_write_control(struct xnes_apu_triangle_t * t, uint8_t value)
+static inline void triangle_write_control(struct nes_apu_triangle_t * t, uint8_t value)
 {
 	t->length_enabled = (value & 0x80) ? 0 : 1;
 	t->counter_period = value & 0x7f;
 }
 
-static inline void triangle_write_timer_low(struct xnes_apu_triangle_t * t, uint8_t value)
+static inline void triangle_write_timer_low(struct nes_apu_triangle_t * t, uint8_t value)
 {
 	t->timer_period = (t->timer_period & 0xff00) | ((uint16_t)value);
 }
 
-static inline void triangle_write_timer_high(struct xnes_apu_triangle_t * t, uint8_t value)
+static inline void triangle_write_timer_high(struct nes_apu_triangle_t * t, uint8_t value)
 {
 	t->length_value = length_table[(value >> 3) & 0x1f];
 	t->timer_period = (t->timer_period & 0x00ff) | (((uint16_t)(value & 0x7)) << 8);
@@ -189,7 +189,7 @@ static inline void triangle_write_timer_high(struct xnes_apu_triangle_t * t, uin
 	t->counter_reload = 1;
 }
 
-static inline void triangle_step_timer(struct xnes_apu_triangle_t * t)
+static inline void triangle_step_timer(struct nes_apu_triangle_t * t)
 {
 	if(t->timer_value == 0)
 	{
@@ -201,13 +201,13 @@ static inline void triangle_step_timer(struct xnes_apu_triangle_t * t)
 		t->timer_value--;
 }
 
-static inline void triangle_step_length(struct xnes_apu_triangle_t * t)
+static inline void triangle_step_length(struct nes_apu_triangle_t * t)
 {
 	if(t->length_enabled && (t->length_value > 0))
 		t->length_value--;
 }
 
-static inline void triangle_step_counter(struct xnes_apu_triangle_t * t)
+static inline void triangle_step_counter(struct nes_apu_triangle_t * t)
 {
 	if(t->counter_reload)
 		t->counter_value = t->counter_period;
@@ -217,7 +217,7 @@ static inline void triangle_step_counter(struct xnes_apu_triangle_t * t)
 		t->counter_reload = 0;
 }
 
-static inline uint8_t triangle_output(struct xnes_apu_triangle_t * t)
+static inline uint8_t triangle_output(struct nes_apu_triangle_t * t)
 {
 	if(!t->enabled)
 		return 0;
@@ -230,7 +230,7 @@ static inline uint8_t triangle_output(struct xnes_apu_triangle_t * t)
 	return triangle_table[t->duty_value];
 }
 
-static inline void noise_write_control(struct xnes_apu_noise_t * n, uint8_t value)
+static inline void noise_write_control(struct nes_apu_noise_t * n, uint8_t value)
 {
 	n->length_enabled = (value & 0x20) ? 0 : 1;
 	n->envelope_loop = (value & 0x20) ? 1 : 0;
@@ -240,19 +240,19 @@ static inline void noise_write_control(struct xnes_apu_noise_t * n, uint8_t valu
 	n->envelope_start = 1;
 }
 
-static inline void noise_write_period(struct xnes_apu_noise_t * n, uint8_t value)
+static inline void noise_write_period(struct nes_apu_noise_t * n, uint8_t value)
 {
 	n->mode = (value & 0x80) ? 1 : 0;
 	n->timer_period = noise_table[value & 0xf];
 }
 
-static inline void noise_write_length(struct xnes_apu_noise_t * n, uint8_t value)
+static inline void noise_write_length(struct nes_apu_noise_t * n, uint8_t value)
 {
 	n->length_value = length_table[(value >> 3) & 0x1f];
 	n->envelope_start = 1;
 }
 
-static inline void noise_step_timer(struct xnes_apu_noise_t * n)
+static inline void noise_step_timer(struct nes_apu_noise_t * n)
 {
 	if(n->timer_value == 0)
 	{
@@ -271,7 +271,7 @@ static inline void noise_step_timer(struct xnes_apu_noise_t * n)
 		n->timer_value--;
 }
 
-static inline void noise_step_envelope(struct xnes_apu_noise_t * n)
+static inline void noise_step_envelope(struct nes_apu_noise_t * n)
 {
 	if(n->envelope_start)
 	{
@@ -293,13 +293,13 @@ static inline void noise_step_envelope(struct xnes_apu_noise_t * n)
 	}
 }
 
-static inline void noise_step_length(struct xnes_apu_noise_t * n)
+static inline void noise_step_length(struct nes_apu_noise_t * n)
 {
 	if(n->length_enabled && (n->length_value > 0))
 		n->length_value--;
 }
 
-static inline uint8_t noise_output(struct xnes_apu_noise_t * n)
+static inline uint8_t noise_output(struct nes_apu_noise_t * n)
 {
 	if(!n->enabled)
 		return 0;
@@ -313,18 +313,18 @@ static inline uint8_t noise_output(struct xnes_apu_noise_t * n)
 		return n->constant_volume;
 }
 
-static inline void dmc_restart(struct xnes_apu_dmc_t * d)
+static inline void dmc_restart(struct nes_apu_dmc_t * d)
 {
 	d->current_address = d->sample_address;
 	d->current_length = d->sample_length;
 }
 
-static inline void dmc_step_reader(struct xnes_apu_dmc_t * d)
+static inline void dmc_step_reader(struct nes_apu_dmc_t * d)
 {
 	if((d->current_length > 0) && (d->bit_count == 0))
 	{
 		d->ctx->cpu.stall += 4;
-		d->shift_register = xnes_cpu_read8(&d->ctx->cpu, d->current_address);
+		d->shift_register = nes_cpu_read8(&d->ctx->cpu, d->current_address);
 		d->bit_count = 8;
 		d->current_address++;
 		if(d->current_address == 0)
@@ -335,7 +335,7 @@ static inline void dmc_step_reader(struct xnes_apu_dmc_t * d)
 	}
 }
 
-static inline void dmc_step_shifter(struct xnes_apu_dmc_t * d)
+static inline void dmc_step_shifter(struct nes_apu_dmc_t * d)
 {
 	if(d->bit_count == 0)
 		return;
@@ -353,7 +353,7 @@ static inline void dmc_step_shifter(struct xnes_apu_dmc_t * d)
 	d->bit_count--;
 }
 
-static inline void dmc_step_timer(struct xnes_apu_dmc_t * d)
+static inline void dmc_step_timer(struct nes_apu_dmc_t * d)
 {
     if(!d->enabled)
 		return;
@@ -367,7 +367,7 @@ static inline void dmc_step_timer(struct xnes_apu_dmc_t * d)
 		d->tick_value--;
 }
 
-static inline uint8_t dmc_output(struct xnes_apu_dmc_t * d)
+static inline uint8_t dmc_output(struct nes_apu_dmc_t * d)
 {
 	return d->value;
 }
@@ -377,7 +377,7 @@ static inline uint8_t dmc_output(struct xnes_apu_dmc_t * d)
  */
 
 
-static inline void step_envelope(struct xnes_apu_t * apu)
+static inline void step_envelope(struct nes_apu_t * apu)
 {
 	pulse_step_envelope(&apu->pulse1);
 	pulse_step_envelope(&apu->pulse2);
@@ -385,13 +385,13 @@ static inline void step_envelope(struct xnes_apu_t * apu)
 	noise_step_envelope(&apu->noise);
 }
 
-static inline void step_sweep(struct xnes_apu_t * apu)
+static inline void step_sweep(struct nes_apu_t * apu)
 {
 	pulse_step_sweep(&apu->pulse1);
 	pulse_step_sweep(&apu->pulse2);
 }
 
-static inline void step_length(struct xnes_apu_t * apu)
+static inline void step_length(struct nes_apu_t * apu)
 {
 	pulse_step_length(&apu->pulse1);
 	pulse_step_length(&apu->pulse2);
@@ -399,13 +399,13 @@ static inline void step_length(struct xnes_apu_t * apu)
 	noise_step_length(&apu->noise);
 }
 
-static inline void fire_irq(struct xnes_apu_t * apu)
+static inline void fire_irq(struct nes_apu_t * apu)
 {
 	if(apu->frame_irq)
-		xnes_cpu_trigger_irq(&apu->ctx->cpu);
+		nes_cpu_trigger_irq(&apu->ctx->cpu);
 }
 
-static inline void step_frame_counter(struct xnes_apu_t * apu)
+static inline void step_frame_counter(struct nes_apu_t * apu)
 {
 	switch(apu->frame_period)
 	{
@@ -455,7 +455,7 @@ static inline void step_frame_counter(struct xnes_apu_t * apu)
 	}
 }
 
-static inline void step_timer(struct xnes_apu_t * apu)
+static inline void step_timer(struct nes_apu_t * apu)
 {
 	if(!(apu->cycles & 0x1))
 	{
@@ -467,7 +467,7 @@ static inline void step_timer(struct xnes_apu_t * apu)
 	triangle_step_timer(&apu->triangle);
 }
 
-static inline void write_control(struct xnes_apu_t * apu, uint8_t value)
+static inline void write_control(struct nes_apu_t * apu, uint8_t value)
 {
 	apu->pulse1.enabled = (value & 0x1) ? 1 : 0;
 	apu->pulse2.enabled = (value & 0x2) ? 1 : 0;
@@ -491,7 +491,7 @@ static inline void write_control(struct xnes_apu_t * apu, uint8_t value)
 	}
 }
 
-static inline void write_frame_counter(struct xnes_apu_t * apu, uint8_t value)
+static inline void write_frame_counter(struct nes_apu_t * apu, uint8_t value)
 {
 	apu->frame_period = 4 + ((value & 0x80) ? 1 : 0);
 	apu->frame_irq = (value & 0x40) ? 0 : 1;
@@ -503,7 +503,7 @@ static inline void write_frame_counter(struct xnes_apu_t * apu, uint8_t value)
 	}
 }
 
-static inline uint8_t read_status(struct xnes_apu_t * apu)
+static inline uint8_t read_status(struct nes_apu_t * apu)
 {
 	uint8_t val = 0;
 	if(apu->pulse1.length_value > 0)
@@ -519,19 +519,19 @@ static inline uint8_t read_status(struct xnes_apu_t * apu)
 	return val;
 }
 
-void xnes_apu_init(struct xnes_apu_t * apu, struct xnes_ctx_t * ctx)
+void nes_apu_init(struct nes_apu_t * apu, struct nes_ctx_t * ctx)
 {
 	apu->ctx = ctx;
-	xnes_apu_reset(apu);
+	nes_apu_reset(apu);
 }
 
-void xnes_apu_reset(struct xnes_apu_t * apu)
+void nes_apu_reset(struct nes_apu_t * apu)
 {
-	xnes_memset(&apu->pulse1, 0, sizeof(struct xnes_apu_pulse_t));
-	xnes_memset(&apu->pulse2, 0, sizeof(struct xnes_apu_pulse_t));
-	xnes_memset(&apu->triangle, 0, sizeof(struct xnes_apu_triangle_t));
-	xnes_memset(&apu->noise, 0, sizeof(struct xnes_apu_noise_t));
-	xnes_memset(&apu->dmc, 0, sizeof(struct xnes_apu_dmc_t));
+	nes_memset(&apu->pulse1, 0, sizeof(struct nes_apu_pulse_t));
+	nes_memset(&apu->pulse2, 0, sizeof(struct nes_apu_pulse_t));
+	nes_memset(&apu->triangle, 0, sizeof(struct nes_apu_triangle_t));
+	nes_memset(&apu->noise, 0, sizeof(struct nes_apu_noise_t));
+	nes_memset(&apu->dmc, 0, sizeof(struct nes_apu_dmc_t));
 	apu->dmc.ctx = apu->ctx;
 	apu->pulse1.channel = 1;
 	apu->pulse2.channel = 2;
@@ -544,7 +544,7 @@ void xnes_apu_reset(struct xnes_apu_t * apu)
 
 
 
-void xnes_apu_step(struct xnes_apu_t * apu)
+void nes_apu_step(struct nes_apu_t * apu)
 {
 	apu->cycles++;
 	step_timer(apu);
@@ -552,7 +552,7 @@ void xnes_apu_step(struct xnes_apu_t * apu)
 		step_frame_counter(apu);
 }
 
-uint8_t xnes_apu_read_register(struct xnes_apu_t * apu, uint16_t addr)
+uint8_t nes_apu_read_register(struct nes_apu_t * apu, uint16_t addr)
 {
 	switch(addr)
 	{
@@ -596,7 +596,7 @@ uint8_t xnes_apu_read_register(struct xnes_apu_t * apu, uint16_t addr)
 	return 0;
 }
 
-void xnes_apu_write_register(struct xnes_apu_t * apu, uint16_t addr, uint8_t val)
+void nes_apu_write_register(struct nes_apu_t * apu, uint16_t addr, uint8_t val)
 {
 	switch(addr)
 	{

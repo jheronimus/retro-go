@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
 enum {
     CPU_INTERRUPT_NMI				= (1 << 0),
@@ -126,9 +126,9 @@ static const uint8_t cpu_instruction_page_cycle[256] = {
 	/* F0 */ 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0,
 };
 
-uint8_t xnes_cpu_read8(struct xnes_cpu_t * cpu, uint16_t addr)
+uint8_t nes_cpu_read8(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	struct xnes_ctx_t * ctx = cpu->ctx;
+	struct nes_ctx_t * ctx = cpu->ctx;
 
 	switch(addr >> 13)
 	{
@@ -138,7 +138,7 @@ uint8_t xnes_cpu_read8(struct xnes_cpu_t * cpu, uint16_t addr)
 
 	/* [0x2000, 0x3FFF] - PPU */
 	case 1:
-		return xnes_ppu_read_register(&ctx->ppu, 0x2000 | (addr & 0x7));
+		return nes_ppu_read_register(&ctx->ppu, 0x2000 | (addr & 0x7));
 
 	/* [0x4000, 0x5FFF] - APU, DMA, Joystick, Zapper, Cartridge (maybe mapper registers) */
 	/* [0x6000, 0x7FFF] - Cartridge RAM (maybe battery-backed) */
@@ -150,26 +150,26 @@ uint8_t xnes_cpu_read8(struct xnes_cpu_t * cpu, uint16_t addr)
 		switch(addr)
 		{
 		case 0x4000 ... 0x400f: /* APU */
-			return xnes_apu_read_register(&ctx->apu, addr);
+			return nes_apu_read_register(&ctx->apu, addr);
 		case 0x4010 ... 0x4014: /* DMA */
-			return xnes_dma_read_register(&ctx->dma, addr);
+			return nes_dma_read_register(&ctx->dma, addr);
 		case 0x4015: /* APU */
-			return xnes_apu_read_register(&ctx->apu, addr);
+			return nes_apu_read_register(&ctx->apu, addr);
 		case 0x4016 ... 0x4017: /* CONTROLLER */
-			return xnes_controller_read_register(&ctx->ctl, addr);
+			return nes_controller_read_register(&ctx->ctl, addr);
 		case 0x4018 ... 0x401f: /* UNUSED */
 			break;
 		default: /* CARTRIDGE */
-			return xnes_cartridge_mapper_cpu_read(ctx, addr);
+			return nes_cartridge_mapper_cpu_read(ctx, addr);
 		}
 		break;
 	}
 	return 0;
 }
 
-void xnes_cpu_write8(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t val)
+void nes_cpu_write8(struct nes_cpu_t * cpu, uint16_t addr, uint8_t val)
 {
-	struct xnes_ctx_t * ctx = cpu->ctx;
+	struct nes_ctx_t * ctx = cpu->ctx;
 
 	switch(addr >> 13)
 	{
@@ -180,7 +180,7 @@ void xnes_cpu_write8(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t val)
 
 	/* [0x2000, 0x3FFF] - PPU */
 	case 1:
-		xnes_ppu_write_register(&ctx->ppu, 0x2000 | (addr & 0x7), val);
+		nes_ppu_write_register(&ctx->ppu, 0x2000 | (addr & 0x7), val);
 		break;
 
 	/* [0x4000, 0x5FFF] - APU, DMA, Joystick, Zapper, Cartridge (maybe mapper registers) */
@@ -193,66 +193,66 @@ void xnes_cpu_write8(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t val)
 		switch(addr)
 		{
 		case 0x4000 ... 0x400f: /* APU */
-			xnes_apu_write_register(&ctx->apu, addr, val);
+			nes_apu_write_register(&ctx->apu, addr, val);
 			break;
 		case 0x4010 ... 0x4014: /* DMA */
-			xnes_dma_write_register(&ctx->dma, addr, val);
+			nes_dma_write_register(&ctx->dma, addr, val);
 			break;
 		case 0x4015: /* APU */
-			xnes_apu_write_register(&ctx->apu, addr, val);
+			nes_apu_write_register(&ctx->apu, addr, val);
 			break;
 		case 0x4016: /* CONTROLLER */
-			xnes_controller_write_register(&ctx->ctl, addr, val);
+			nes_controller_write_register(&ctx->ctl, addr, val);
 			break;
 		case 0x4017: /* APU */
-			xnes_apu_write_register(&ctx->apu, addr, val);
+			nes_apu_write_register(&ctx->apu, addr, val);
 			break;
 		case 0x4018 ... 0x401f: /* UNUSED */
 			break;
 		default: /* CARTRIDGE */
-			xnes_cartridge_mapper_cpu_write(ctx, addr, val);
+			nes_cartridge_mapper_cpu_write(ctx, addr, val);
 			break;
 		}
 		break;
 	}
 }
 
-static inline uint16_t cpu_read16(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline uint16_t cpu_read16(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t lo = xnes_cpu_read8(cpu, addr);
-	uint8_t hi = xnes_cpu_read8(cpu, addr + 1);
+	uint8_t lo = nes_cpu_read8(cpu, addr);
+	uint8_t hi = nes_cpu_read8(cpu, addr + 1);
 	return ((uint16_t)hi << 8) | lo;
 }
 
-static inline uint16_t cpu_read16_indirect_bug(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline uint16_t cpu_read16_indirect_bug(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t lo = xnes_cpu_read8(cpu, addr);
-	uint8_t hi = xnes_cpu_read8(cpu, (addr & 0xff00) | ((addr + 1) & 0x00ff));
+	uint8_t lo = nes_cpu_read8(cpu, addr);
+	uint8_t hi = nes_cpu_read8(cpu, (addr & 0xff00) | ((addr + 1) & 0x00ff));
 	return ((uint16_t)hi << 8) | lo;
 }
 
 /*
  * Push a byte onto the stack
  */
-static inline void cpu_stack_push8(struct xnes_cpu_t * cpu, uint8_t val)
+static inline void cpu_stack_push8(struct nes_cpu_t * cpu, uint8_t val)
 {
-	xnes_cpu_write8(cpu, 0x100 | cpu->sp, val);
+	nes_cpu_write8(cpu, 0x100 | cpu->sp, val);
 	cpu->sp--;
 }
 
 /*
  * Pop a byte from the stack
  */
-static inline uint8_t cpu_stack_pop8(struct xnes_cpu_t * cpu)
+static inline uint8_t cpu_stack_pop8(struct nes_cpu_t * cpu)
 {
 	cpu->sp++;
-	return xnes_cpu_read8(cpu, 0x100 | cpu->sp);
+	return nes_cpu_read8(cpu, 0x100 | cpu->sp);
 }
 
 /*
  * Push two bytes onto the stack
  */
-static inline void cpu_stack_push16(struct xnes_cpu_t * cpu, uint16_t val)
+static inline void cpu_stack_push16(struct nes_cpu_t * cpu, uint16_t val)
 {
 	cpu_stack_push8(cpu, (val >> 8) & 0xff);
 	cpu_stack_push8(cpu, (val >> 0) & 0xff);
@@ -261,7 +261,7 @@ static inline void cpu_stack_push16(struct xnes_cpu_t * cpu, uint16_t val)
 /*
  * Pop two bytes from the stack
  */
-static inline uint16_t cpu_stack_pop16(struct xnes_cpu_t * cpu)
+static inline uint16_t cpu_stack_pop16(struct nes_cpu_t * cpu)
 {
 	uint8_t lo = cpu_stack_pop8(cpu);
 	uint8_t hi = cpu_stack_pop8(cpu);
@@ -271,52 +271,52 @@ static inline uint16_t cpu_stack_pop16(struct xnes_cpu_t * cpu)
 /*
  * Set the zero flag if the argument is zero
  */
-static inline void cpu_set_z(struct xnes_cpu_t * cpu, uint8_t val)
+static inline void cpu_set_z(struct nes_cpu_t * cpu, uint8_t val)
 {
 	if(val == 0)
-		cpu->p |= XNES_CPU_P_Z;
+		cpu->p |= NES_CPU_P_Z;
 	else
-		cpu->p &= ~XNES_CPU_P_Z;
+		cpu->p &= ~NES_CPU_P_Z;
 }
 
 /*
  * Set the negative flag if the argument is negative (high bit is set)
  */
-static inline void cpu_set_n(struct xnes_cpu_t * cpu, uint8_t val)
+static inline void cpu_set_n(struct nes_cpu_t * cpu, uint8_t val)
 {
 	if(val & 0x80)
-		cpu->p |= XNES_CPU_P_N;
+		cpu->p |= NES_CPU_P_N;
 	else
-		cpu->p &= ~XNES_CPU_P_N;
+		cpu->p &= ~NES_CPU_P_N;
 }
 
 /*
  * Set the zero flag and the negative flag
  */
-static inline void cpu_set_zn(struct xnes_cpu_t * cpu, uint8_t val)
+static inline void cpu_set_zn(struct nes_cpu_t * cpu, uint8_t val)
 {
 	cpu_set_z(cpu, val);
 	cpu_set_n(cpu, val);
 }
 
-static inline int cpu_add_branch_cycles(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_add_branch_cycles(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	return ((cpu->pc & 0xff00) != (addr & 0xff00)) ? 2 : 1;
 }
 
-static inline void cpu_compare(struct xnes_cpu_t * cpu, uint8_t a, uint8_t b)
+static inline void cpu_compare(struct nes_cpu_t * cpu, uint8_t a, uint8_t b)
 {
 	cpu_set_zn(cpu, a - b);
 	if(a >= b)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 }
 
 /*
  * PHP - Push Processor Status
  */
-static inline void cpu_php(struct xnes_cpu_t * cpu)
+static inline void cpu_php(struct nes_cpu_t * cpu)
 {
 	cpu_stack_push8(cpu, cpu->p | 0x10);
 }
@@ -324,78 +324,78 @@ static inline void cpu_php(struct xnes_cpu_t * cpu)
 /*
  * SEI - Set Interrupt Disable
  */
-static inline void cpu_sei(struct xnes_cpu_t * cpu)
+static inline void cpu_sei(struct nes_cpu_t * cpu)
 {
-	cpu->p |= XNES_CPU_P_I;
+	cpu->p |= NES_CPU_P_I;
 }
 
 /*
  * SHX - Stores X AND at addr
  */
-static inline void cpu_shx(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_shx(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t v = ((addr >> 8) + 1) & cpu->x;
-	xnes_cpu_write8(cpu, (v << 8) | (addr & 0xff), v);
+	nes_cpu_write8(cpu, (v << 8) | (addr & 0xff), v);
 }
 
 /*
  * SHY - Stores Y AND at addr
  */
-static inline void cpu_shy(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_shy(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t v = ((addr >> 8) + 1) & cpu->y;
-	xnes_cpu_write8(cpu, (v << 8) | (addr & 0xff), v);
+	nes_cpu_write8(cpu, (v << 8) | (addr & 0xff), v);
 }
 
 /*
  * ADC - Add with Carry
  */
-static inline void cpu_adc(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_adc(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t a = cpu->a;
-	uint8_t b = xnes_cpu_read8(cpu, addr);
-	uint8_t c = (cpu->p & XNES_CPU_P_C) ? 1 : 0;
+	uint8_t b = nes_cpu_read8(cpu, addr);
+	uint8_t c = (cpu->p & NES_CPU_P_C) ? 1 : 0;
 	int v = a + b + c;
 	cpu->a = v;
 	cpu_set_zn(cpu, cpu->a);
 	if(v > 0xff)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 	if((((a ^ b) & 0x80) == 0) && (((a ^ cpu->a) & 0x80) != 0))
-		cpu->p |= XNES_CPU_P_V;
+		cpu->p |= NES_CPU_P_V;
 	else
-		cpu->p &= ~XNES_CPU_P_V;
+		cpu->p &= ~NES_CPU_P_V;
 }
 
 /*
  * AHX - Stores A AND X AND
  */
-static inline void cpu_ahx(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_ahx(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t val = cpu->a & cpu->x & ((addr >> 8) + 1);
-	xnes_cpu_write8(cpu, addr, val);
+	nes_cpu_write8(cpu, addr, val);
 }
 
 /*
  * AND - Logical AND
  */
-static inline void cpu_and(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_and(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a = cpu->a & xnes_cpu_read8(cpu, addr);
+	cpu->a = cpu->a & nes_cpu_read8(cpu, addr);
 	cpu_set_zn(cpu, cpu->a);
 }
 
 /*
  * ALR - AND And LSR
  */
-static inline void cpu_alr(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_alr(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a = cpu->a & xnes_cpu_read8(cpu, addr);
+	cpu->a = cpu->a & nes_cpu_read8(cpu, addr);
 	if(cpu->a & 0x1)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 	cpu->a >>= 0x1;
 	cpu_set_zn(cpu, cpu->a);
 }
@@ -403,56 +403,56 @@ static inline void cpu_alr(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * ANC - And With Carry
  */
-static inline void cpu_anc(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_anc(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	cpu_and(cpu, addr);
 	if(cpu->a & 0x80)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 }
 
 /*
  * ARR - AND and ROR
  */
-static inline void cpu_arr(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_arr(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a &= xnes_cpu_read8(cpu, addr);
-	cpu->a = (cpu->a >> 1) | ((cpu->p & XNES_CPU_P_C) ? 0x80 : 0x00);
+	cpu->a &= nes_cpu_read8(cpu, addr);
+	cpu->a = (cpu->a >> 1) | ((cpu->p & NES_CPU_P_C) ? 0x80 : 0x00);
 	cpu_set_zn(cpu, cpu->a);
 	if((cpu->a >> 6) & 0x1)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 	if(((cpu->a >> 5) ^ (cpu->a >> 6)) & 0x1)
-		cpu->p |= XNES_CPU_P_V;
+		cpu->p |= NES_CPU_P_V;
 	else
-		cpu->p &= ~XNES_CPU_P_V;
+		cpu->p &= ~NES_CPU_P_V;
 }
 
 /*
  * ASL - Arithmetic Shift Left
  */
-static inline void cpu_asl(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
+static inline void cpu_asl(struct nes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 {
 	if(mode == CPU_ADDR_MODE_ACCUMULATOR)
 	{
 		if(cpu->a & 0x80)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		cpu->a <<= 1;
 		cpu_set_zn(cpu, cpu->a);
 	}
 	else
 	{
-		uint8_t val = xnes_cpu_read8(cpu, addr);
+		uint8_t val = nes_cpu_read8(cpu, addr);
 		if(val & 0x80)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		val <<= 1;
-		xnes_cpu_write8(cpu, addr, val);
+		nes_cpu_write8(cpu, addr, val);
 		cpu_set_zn(cpu, val);
 	}
 }
@@ -460,34 +460,34 @@ static inline void cpu_asl(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 /*
  * AXS - CMP and DEX at once
  */
-static inline void cpu_axs(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_axs(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t a = cpu->a & cpu->x;
-	uint8_t b = xnes_cpu_read8(cpu, addr);
+	uint8_t b = nes_cpu_read8(cpu, addr);
 
 	if(a >= b)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 	if(a == b)
-		cpu->p |= XNES_CPU_P_Z;
+		cpu->p |= NES_CPU_P_Z;
 	else
-		cpu->p &= ~XNES_CPU_P_Z;
+		cpu->p &= ~NES_CPU_P_Z;
 	cpu->x = a - b;
 	if(cpu->x & 0x80)
-		cpu->p |= XNES_CPU_P_N;
+		cpu->p |= NES_CPU_P_N;
 	else
-		cpu->p &= ~XNES_CPU_P_N;
+		cpu->p &= ~NES_CPU_P_N;
 }
 
 /*
  * BCC - Branch if Carry Clear
  */
-static inline int cpu_bcc(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bcc(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(!(cpu->p & XNES_CPU_P_C))
+	if(!(cpu->p & NES_CPU_P_C))
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -498,11 +498,11 @@ static inline int cpu_bcc(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BCS - Branch if Carry Set
  */
-static inline int cpu_bcs(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bcs(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(cpu->p & XNES_CPU_P_C)
+	if(cpu->p & NES_CPU_P_C)
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -513,11 +513,11 @@ static inline int cpu_bcs(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BEQ - Branch if Equal
  */
-static inline int cpu_beq(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_beq(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(cpu->p & XNES_CPU_P_Z)
+	if(cpu->p & NES_CPU_P_Z)
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -528,14 +528,14 @@ static inline int cpu_beq(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BIT - Bit Test
  */
-static inline void cpu_bit(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_bit(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr);
+	uint8_t val = nes_cpu_read8(cpu, addr);
 
-	if(val & XNES_CPU_P_V)
-		cpu->p |= XNES_CPU_P_V;
+	if(val & NES_CPU_P_V)
+		cpu->p |= NES_CPU_P_V;
 	else
-		cpu->p &= ~XNES_CPU_P_V;
+		cpu->p &= ~NES_CPU_P_V;
 	cpu_set_z(cpu, val & cpu->a);
 	cpu_set_n(cpu, val);
 }
@@ -543,11 +543,11 @@ static inline void cpu_bit(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BMI - Branch if Minus
  */
-static inline int cpu_bmi(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bmi(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(cpu->p & XNES_CPU_P_N)
+	if(cpu->p & NES_CPU_P_N)
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -558,11 +558,11 @@ static inline int cpu_bmi(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BNE - Branch if Not Equal
  */
-static inline int cpu_bne(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bne(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(!(cpu->p & XNES_CPU_P_Z))
+	if(!(cpu->p & NES_CPU_P_Z))
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -573,11 +573,11 @@ static inline int cpu_bne(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BPL - Branch if Positive
  */
-static inline int cpu_bpl(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bpl(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(!(cpu->p & XNES_CPU_P_N))
+	if(!(cpu->p & NES_CPU_P_N))
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -588,22 +588,22 @@ static inline int cpu_bpl(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BRK - Force Interrupt
  */
-static inline void cpu_brk(struct xnes_cpu_t * cpu)
+static inline void cpu_brk(struct nes_cpu_t * cpu)
 {
 	cpu_stack_push16(cpu, cpu->pc);
 	cpu_php(cpu);
-	cpu->p |= XNES_CPU_P_I;
+	cpu->p |= NES_CPU_P_I;
 	cpu->pc = cpu_read16(cpu, 0xfffe);
 }
 
 /*
  * BVC - Branch if Overflow Clear
  */
-static inline int cpu_bvc(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bvc(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(!(cpu->p & XNES_CPU_P_V))
+	if(!(cpu->p & NES_CPU_P_V))
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -614,11 +614,11 @@ static inline int cpu_bvc(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * BVS - Branch if Overflow Set
  */
-static inline int cpu_bvs(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline int cpu_bvs(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	int cycles = 0;
 
-	if(cpu->p & XNES_CPU_P_V)
+	if(cpu->p & NES_CPU_P_V)
 	{
 		cycles += cpu_add_branch_cycles(cpu, addr);
 		cpu->pc = addr;
@@ -629,76 +629,76 @@ static inline int cpu_bvs(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * CLC - Clear Carry Flag
  */
-static inline void cpu_clc(struct xnes_cpu_t * cpu)
+static inline void cpu_clc(struct nes_cpu_t * cpu)
 {
-	cpu->p &= ~XNES_CPU_P_C;
+	cpu->p &= ~NES_CPU_P_C;
 }
 
 /*
  * CLD - Clear Decimal Mode
  */
-static inline void cpu_cld(struct xnes_cpu_t * cpu)
+static inline void cpu_cld(struct nes_cpu_t * cpu)
 {
-	cpu->p &= ~XNES_CPU_P_D;
+	cpu->p &= ~NES_CPU_P_D;
 }
 
 /*
  * CLI - Clear Interrupt Disable
  */
-static inline void cpu_cli(struct xnes_cpu_t * cpu)
+static inline void cpu_cli(struct nes_cpu_t * cpu)
 {
-	cpu->p &= ~XNES_CPU_P_I;
+	cpu->p &= ~NES_CPU_P_I;
 }
 
 /*
  * CLV - Clear Overflow Flag
  */
-static inline void cpu_clv(struct xnes_cpu_t * cpu)
+static inline void cpu_clv(struct nes_cpu_t * cpu)
 {
-	cpu->p &= ~XNES_CPU_P_V;
+	cpu->p &= ~NES_CPU_P_V;
 }
 
 /*
  * CMP - Compare
  */
-static inline void cpu_cmp(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_cmp(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr);
+	uint8_t val = nes_cpu_read8(cpu, addr);
 	cpu_compare(cpu, cpu->a, val);
 }
 
 /*
  * CPX - Compare X Register
  */
-static inline void cpu_cpx(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_cpx(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr);
+	uint8_t val = nes_cpu_read8(cpu, addr);
 	cpu_compare(cpu, cpu->x, val);
 }
 
 /*
  * CPY - Compare Y Register
  */
-static inline void cpu_cpy(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_cpy(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr);
+	uint8_t val = nes_cpu_read8(cpu, addr);
 	cpu_compare(cpu, cpu->y, val);
 }
 
 /*
  * DEC - Decrement Memory
  */
-static inline void cpu_dec(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_dec(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr) - 1;
-	xnes_cpu_write8(cpu, addr, val);
+	uint8_t val = nes_cpu_read8(cpu, addr) - 1;
+	nes_cpu_write8(cpu, addr, val);
 	cpu_set_zn(cpu, val);
 }
 
 /*
  * DEX - Decrement X Register
  */
-static inline void cpu_dex(struct xnes_cpu_t * cpu)
+static inline void cpu_dex(struct nes_cpu_t * cpu)
 {
 	cpu->x--;
 	cpu_set_zn(cpu, cpu->x);
@@ -707,7 +707,7 @@ static inline void cpu_dex(struct xnes_cpu_t * cpu)
 /*
  * DEY - Decrement Y Register
  */
-static inline void cpu_dey(struct xnes_cpu_t * cpu)
+static inline void cpu_dey(struct nes_cpu_t * cpu)
 {
 	cpu->y--;
 	cpu_set_zn(cpu, cpu->y);
@@ -716,26 +716,26 @@ static inline void cpu_dey(struct xnes_cpu_t * cpu)
 /*
  * EOR - Exclusive OR
  */
-static inline void cpu_eor(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_eor(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a = cpu->a ^ xnes_cpu_read8(cpu, addr);
+	cpu->a = cpu->a ^ nes_cpu_read8(cpu, addr);
 	cpu_set_zn(cpu, cpu->a);
 }
 
 /*
  * INC - Increment Memory
  */
-static inline void cpu_inc(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_inc(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr) + 1;
-	xnes_cpu_write8(cpu, addr, val);
+	uint8_t val = nes_cpu_read8(cpu, addr) + 1;
+	nes_cpu_write8(cpu, addr, val);
 	cpu_set_zn(cpu, val);
 }
 
 /*
  * INX - Increment X Register
  */
-static inline void cpu_inx(struct xnes_cpu_t * cpu)
+static inline void cpu_inx(struct nes_cpu_t * cpu)
 {
 	cpu->x++;
 	cpu_set_zn(cpu, cpu->x);
@@ -744,7 +744,7 @@ static inline void cpu_inx(struct xnes_cpu_t * cpu)
 /*
  * INY - Increment Y Register
  */
-static inline void cpu_iny(struct xnes_cpu_t * cpu)
+static inline void cpu_iny(struct nes_cpu_t * cpu)
 {
 	cpu->y++;
 	cpu_set_zn(cpu, cpu->y);
@@ -753,7 +753,7 @@ static inline void cpu_iny(struct xnes_cpu_t * cpu)
 /*
  * JMP - Jump
  */
-static inline void cpu_jmp(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_jmp(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	cpu->pc = addr;
 }
@@ -761,7 +761,7 @@ static inline void cpu_jmp(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * JSR - Jump to Subroutine
  */
-static inline void cpu_jsr(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_jsr(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	cpu_stack_push16(cpu, cpu->pc - 1);
 	cpu->pc = addr;
@@ -770,9 +770,9 @@ static inline void cpu_jsr(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * LAS - LDA/TSX oper
  */
-static inline void cpu_las(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_las(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	uint8_t val = xnes_cpu_read8(cpu, addr) & cpu->sp;
+	uint8_t val = nes_cpu_read8(cpu, addr) & cpu->sp;
 	cpu->a = cpu->x = cpu->sp = val;
 	cpu_set_zn(cpu, val);
 }
@@ -780,53 +780,53 @@ static inline void cpu_las(struct xnes_cpu_t * cpu, uint16_t addr)
 /*
  * LDA - Load Accumulator
  */
-static inline void cpu_lda(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_lda(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a = xnes_cpu_read8(cpu, addr);
+	cpu->a = nes_cpu_read8(cpu, addr);
 	cpu_set_zn(cpu, cpu->a);
 }
 
 /*
  * LDX - Load X Register
  */
-static inline void cpu_ldx(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_ldx(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->x = xnes_cpu_read8(cpu, addr);
+	cpu->x = nes_cpu_read8(cpu, addr);
 	cpu_set_zn(cpu, cpu->x);
 }
 
 /*
  * LDY - Load Y Register
  */
-static inline void cpu_ldy(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_ldy(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->y = xnes_cpu_read8(cpu, addr);
+	cpu->y = nes_cpu_read8(cpu, addr);
 	cpu_set_zn(cpu, cpu->y);
 }
 
 /*
  * LSR - Logical Shift Right
  */
-static inline void cpu_lsr(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
+static inline void cpu_lsr(struct nes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 {
 	if(mode == CPU_ADDR_MODE_ACCUMULATOR)
 	{
 		if(cpu->a & 0x1)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		cpu->a >>= 0x1;
 		cpu_set_zn(cpu, cpu->a);
 	}
 	else
 	{
-		uint8_t val = xnes_cpu_read8(cpu, addr);
+		uint8_t val = nes_cpu_read8(cpu, addr);
 		if(val & 0x1)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		val >>= 0x1;
-		xnes_cpu_write8(cpu, addr, val);
+		nes_cpu_write8(cpu, addr, val);
 		cpu_set_zn(cpu, val);
 	}
 }
@@ -834,16 +834,16 @@ static inline void cpu_lsr(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 /*
  * ORA - Logical Inclusive OR
  */
-static inline void cpu_ora(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_ora(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a = cpu->a | xnes_cpu_read8(cpu, addr);
+	cpu->a = cpu->a | nes_cpu_read8(cpu, addr);
 	cpu_set_zn(cpu, cpu->a);
 }
 
 /*
  * PHA - Push Accumulator
  */
-static inline void cpu_pha(struct xnes_cpu_t * cpu)
+static inline void cpu_pha(struct nes_cpu_t * cpu)
 {
 	cpu_stack_push8(cpu, cpu->a);
 }
@@ -851,7 +851,7 @@ static inline void cpu_pha(struct xnes_cpu_t * cpu)
 /*
  * PLA - Pull Accumulator
  */
-static inline void cpu_pla(struct xnes_cpu_t * cpu)
+static inline void cpu_pla(struct nes_cpu_t * cpu)
 {
 	cpu->a = cpu_stack_pop8(cpu);
 	cpu_set_zn(cpu, cpu->a);
@@ -860,7 +860,7 @@ static inline void cpu_pla(struct xnes_cpu_t * cpu)
 /*
  * PLP - Pull Processor Status
  */
-static inline void cpu_plp(struct xnes_cpu_t * cpu)
+static inline void cpu_plp(struct nes_cpu_t * cpu)
 {
 	cpu->p = (cpu_stack_pop8(cpu) & 0xef) | 0x20;
 }
@@ -868,28 +868,28 @@ static inline void cpu_plp(struct xnes_cpu_t * cpu)
 /*
  * ROL - Rotate Left
  */
-static inline void cpu_rol(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
+static inline void cpu_rol(struct nes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 {
 	if(mode == CPU_ADDR_MODE_ACCUMULATOR)
 	{
-		uint8_t c = (cpu->p & XNES_CPU_P_C) ? 1 : 0;
+		uint8_t c = (cpu->p & NES_CPU_P_C) ? 1 : 0;
 		if(cpu->a & 0x80)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		cpu->a = (cpu->a << 1) | c;
 		cpu_set_zn(cpu, cpu->a);
 	}
 	else
 	{
-		uint8_t c = (cpu->p & XNES_CPU_P_C) ? 1 : 0;
-		uint8_t val = xnes_cpu_read8(cpu, addr);
+		uint8_t c = (cpu->p & NES_CPU_P_C) ? 1 : 0;
+		uint8_t val = nes_cpu_read8(cpu, addr);
 		if(val & 0x80)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		val = (val << 1) | c;
-		xnes_cpu_write8(cpu, addr, val);
+		nes_cpu_write8(cpu, addr, val);
 		cpu_set_zn(cpu, val);
 	}
 }
@@ -897,28 +897,28 @@ static inline void cpu_rol(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 /*
  * ROR - Rotate Right
  */
-static inline void cpu_ror(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
+static inline void cpu_ror(struct nes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 {
 	if(mode == CPU_ADDR_MODE_ACCUMULATOR)
 	{
-		uint8_t c = (cpu->p & XNES_CPU_P_C) ? 1 : 0;
+		uint8_t c = (cpu->p & NES_CPU_P_C) ? 1 : 0;
 		if(cpu->a & 0x1)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		cpu->a = (cpu->a >> 1) | (c << 7);
 		cpu_set_zn(cpu, cpu->a);
 	}
 	else
 	{
-		uint8_t c = (cpu->p & XNES_CPU_P_C) ? 1 : 0;
-		uint8_t val = xnes_cpu_read8(cpu, addr);
+		uint8_t c = (cpu->p & NES_CPU_P_C) ? 1 : 0;
+		uint8_t val = nes_cpu_read8(cpu, addr);
 		if(val & 0x1)
-			cpu->p |= XNES_CPU_P_C;
+			cpu->p |= NES_CPU_P_C;
 		else
-			cpu->p &= ~XNES_CPU_P_C;
+			cpu->p &= ~NES_CPU_P_C;
 		val = (val >> 1) | (c << 7);
-		xnes_cpu_write8(cpu, addr, val);
+		nes_cpu_write8(cpu, addr, val);
 		cpu_set_zn(cpu, val);
 	}
 }
@@ -926,7 +926,7 @@ static inline void cpu_ror(struct xnes_cpu_t * cpu, uint16_t addr, uint8_t mode)
 /*
  * RTI - Return from Interrupt
  */
-static inline void cpu_rti(struct xnes_cpu_t * cpu)
+static inline void cpu_rti(struct nes_cpu_t * cpu)
 {
 	cpu->p = (cpu_stack_pop8(cpu) & 0xef) | 0x20;
 	cpu->pc = cpu_stack_pop16(cpu);
@@ -935,7 +935,7 @@ static inline void cpu_rti(struct xnes_cpu_t * cpu)
 /*
  * RTS - Return from Subroutine
  */
-static inline void cpu_rts(struct xnes_cpu_t * cpu)
+static inline void cpu_rts(struct nes_cpu_t * cpu)
 {
 	cpu->pc = cpu_stack_pop16(cpu) + 1;
 }
@@ -943,86 +943,86 @@ static inline void cpu_rts(struct xnes_cpu_t * cpu)
 /*
  * SAX - Store A & X
  */
-static inline void cpu_sax(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_sax(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	xnes_cpu_write8(cpu, addr, cpu->a & cpu->x);
+	nes_cpu_write8(cpu, addr, cpu->a & cpu->x);
 }
 
 /*
  * SBC - Subtract with Carry
  */
-static inline void cpu_sbc(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_sbc(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t a = cpu->a;
-	uint8_t b = xnes_cpu_read8(cpu, addr);
-	uint8_t c = (cpu->p & XNES_CPU_P_C) ? 1 : 0;
+	uint8_t b = nes_cpu_read8(cpu, addr);
+	uint8_t c = (cpu->p & NES_CPU_P_C) ? 1 : 0;
 	int v = a - b - (1 - c);
 	cpu->a = v;
 	cpu_set_zn(cpu, cpu->a);
 	if(v >= 0)
-		cpu->p |= XNES_CPU_P_C;
+		cpu->p |= NES_CPU_P_C;
 	else
-		cpu->p &= ~XNES_CPU_P_C;
+		cpu->p &= ~NES_CPU_P_C;
 	if((((a ^ b) & 0x80) != 0) && (((a ^ cpu->a) & 0x80) != 0))
-		cpu->p |= XNES_CPU_P_V;
+		cpu->p |= NES_CPU_P_V;
 	else
-		cpu->p &= ~XNES_CPU_P_V;
+		cpu->p &= ~NES_CPU_P_V;
 }
 
 /*
  * SEC - Set Carry Flag
  */
-static inline void cpu_sec(struct xnes_cpu_t * cpu)
+static inline void cpu_sec(struct nes_cpu_t * cpu)
 {
-	cpu->p |= XNES_CPU_P_C;
+	cpu->p |= NES_CPU_P_C;
 }
 
 /*
  * SED - Set Decimal Flag
  */
-static inline void cpu_sed(struct xnes_cpu_t * cpu)
+static inline void cpu_sed(struct nes_cpu_t * cpu)
 {
-	cpu->p |= XNES_CPU_P_D;
+	cpu->p |= NES_CPU_P_D;
 }
 
 /*
  * STA - Store Accumulator
  */
-static inline void cpu_sta(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_sta(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	xnes_cpu_write8(cpu, addr, cpu->a);
+	nes_cpu_write8(cpu, addr, cpu->a);
 }
 
 /*
  * STX - Store X Register
  */
-static inline void cpu_stx(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_stx(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	xnes_cpu_write8(cpu, addr, cpu->x);
+	nes_cpu_write8(cpu, addr, cpu->x);
 }
 
 /*
  * STY - Store Y Register
  */
-static inline void cpu_sty(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_sty(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	xnes_cpu_write8(cpu, addr, cpu->y);
+	nes_cpu_write8(cpu, addr, cpu->y);
 }
 
 /*
  * TAS - Puts A AND X in SP and stores A AND X AND at addr
  */
-static inline void cpu_tas(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_tas(struct nes_cpu_t * cpu, uint16_t addr)
 {
 	uint8_t val = cpu->a & cpu->x;
 	cpu->sp = val;
-	xnes_cpu_write8(cpu, addr, val & ((addr >> 8) + 1));
+	nes_cpu_write8(cpu, addr, val & ((addr >> 8) + 1));
 }
 
 /*
  * TAX - Transfer Accumulator to X
  */
-static inline void cpu_tax(struct xnes_cpu_t * cpu)
+static inline void cpu_tax(struct nes_cpu_t * cpu)
 {
 	cpu->x = cpu->a;
 	cpu_set_zn(cpu, cpu->x);
@@ -1031,7 +1031,7 @@ static inline void cpu_tax(struct xnes_cpu_t * cpu)
 /*
  * TAY - Transfer Accumulator to Y
  */
-static inline void cpu_tay(struct xnes_cpu_t * cpu)
+static inline void cpu_tay(struct nes_cpu_t * cpu)
 {
 	cpu->y = cpu->a;
 	cpu_set_zn(cpu, cpu->y);
@@ -1040,7 +1040,7 @@ static inline void cpu_tay(struct xnes_cpu_t * cpu)
 /*
  * TSX - Transfer Stack Pointer to X
  */
-static inline void cpu_tsx(struct xnes_cpu_t * cpu)
+static inline void cpu_tsx(struct nes_cpu_t * cpu)
 {
 	cpu->x = cpu->sp;
 	cpu_set_zn(cpu, cpu->x);
@@ -1049,7 +1049,7 @@ static inline void cpu_tsx(struct xnes_cpu_t * cpu)
 /*
  * TXA - Transfer X to Accumulator
  */
-static inline void cpu_txa(struct xnes_cpu_t * cpu)
+static inline void cpu_txa(struct nes_cpu_t * cpu)
 {
 	cpu->a = cpu->x;
 	cpu_set_zn(cpu, cpu->a);
@@ -1058,7 +1058,7 @@ static inline void cpu_txa(struct xnes_cpu_t * cpu)
 /*
  * TXS - Transfer X to Stack Pointer
  */
-static inline void cpu_txs(struct xnes_cpu_t * cpu)
+static inline void cpu_txs(struct nes_cpu_t * cpu)
 {
 	cpu->sp = cpu->x;
 }
@@ -1066,7 +1066,7 @@ static inline void cpu_txs(struct xnes_cpu_t * cpu)
 /*
  * TYA - Transfer Y to Accumulator
  */
-static inline void cpu_tya(struct xnes_cpu_t * cpu)
+static inline void cpu_tya(struct nes_cpu_t * cpu)
 {
 	cpu->a = cpu->y;
 	cpu_set_zn(cpu, cpu->a);
@@ -1075,42 +1075,42 @@ static inline void cpu_tya(struct xnes_cpu_t * cpu)
 /*
  * XAA - OR X and AND
  */
-static inline void cpu_xaa(struct xnes_cpu_t * cpu, uint16_t addr)
+static inline void cpu_xaa(struct nes_cpu_t * cpu, uint16_t addr)
 {
-	cpu->a = (cpu->a | 0xee) & cpu->x & xnes_cpu_read8(cpu, addr);
+	cpu->a = (cpu->a | 0xee) & cpu->x & nes_cpu_read8(cpu, addr);
 }
 
-void xnes_cpu_init(struct xnes_cpu_t * cpu, struct xnes_ctx_t * ctx)
+void nes_cpu_init(struct nes_cpu_t * cpu, struct nes_ctx_t * ctx)
 {
-	xnes_memset(cpu, 0, sizeof(struct xnes_cpu_t));
+	nes_memset(cpu, 0, sizeof(struct nes_cpu_t));
 	cpu->ctx = ctx;
 	cpu->debugger = NULL;
-	xnes_cpu_reset(cpu);
+	nes_cpu_reset(cpu);
 }
 
-void xnes_cpu_reset(struct xnes_cpu_t * cpu)
+void nes_cpu_reset(struct nes_cpu_t * cpu)
 {
-	xnes_memset(cpu->ram, 0, sizeof(cpu->ram));
+	nes_memset(cpu->ram, 0, sizeof(cpu->ram));
 	cpu->cycles = 0;
 	cpu->stall = 0;
 	cpu->pc = cpu_read16(cpu, 0xfffc);
 	cpu->sp = 0xfd;
-	cpu->p = XNES_CPU_P_U | XNES_CPU_P_I;
+	cpu->p = NES_CPU_P_U | NES_CPU_P_I;
 	cpu->interrupt = 0;
 }
 
-void xnes_cpu_trigger_nmi(struct xnes_cpu_t * cpu)
+void nes_cpu_trigger_nmi(struct nes_cpu_t * cpu)
 {
 	cpu->interrupt |= CPU_INTERRUPT_NMI;
 }
 
-void xnes_cpu_trigger_irq(struct xnes_cpu_t * cpu)
+void nes_cpu_trigger_irq(struct nes_cpu_t * cpu)
 {
-	if(!(cpu->p & XNES_CPU_P_I))
+	if(!(cpu->p & NES_CPU_P_I))
 		cpu->interrupt |= CPU_INTERRUPT_IRQ;
 }
 
-int xnes_cpu_step(struct xnes_cpu_t * cpu)
+int nes_cpu_step(struct nes_cpu_t * cpu)
 {
 	if(cpu->stall > 0)
 	{
@@ -1126,7 +1126,7 @@ int xnes_cpu_step(struct xnes_cpu_t * cpu)
 		cpu_stack_push16(cpu, cpu->pc);
 		cpu_php(cpu);
 		cpu->pc = cpu_read16(cpu, 0xfffa);
-		cpu->p |= XNES_CPU_P_I;
+		cpu->p |= NES_CPU_P_I;
 		cycles += 7;
 		cpu->interrupt &= ~CPU_INTERRUPT_NMI;
 	}
@@ -1135,11 +1135,11 @@ int xnes_cpu_step(struct xnes_cpu_t * cpu)
 		cpu_stack_push16(cpu, cpu->pc);
 		cpu_php(cpu);
 		cpu->pc = cpu_read16(cpu, 0xfffe);
-		cpu->p |= XNES_CPU_P_I;
+		cpu->p |= NES_CPU_P_I;
 		cycles += 7;
 		cpu->interrupt &= ~CPU_INTERRUPT_IRQ;
 	}
-	uint8_t opcode = xnes_cpu_read8(cpu, cpu->pc);
+	uint8_t opcode = nes_cpu_read8(cpu, cpu->pc);
 	uint8_t mode = cpu_instruction_mode[opcode];
 	uint16_t addr;
 	uint16_t v16;
@@ -1180,13 +1180,13 @@ int xnes_cpu_step(struct xnes_cpu_t * cpu)
 		addr = 0;
 		break;
 	case CPU_ADDR_MODE_INDIRECT_X:
-		addr = cpu_read16_indirect_bug(cpu, ((uint16_t)xnes_cpu_read8(cpu, cpu->pc + 1) + cpu->x) & 0xff);
+		addr = cpu_read16_indirect_bug(cpu, ((uint16_t)nes_cpu_read8(cpu, cpu->pc + 1) + cpu->x) & 0xff);
 		break;
 	case CPU_ADDR_MODE_INDIRECT:
 		addr = cpu_read16_indirect_bug(cpu, cpu_read16(cpu, cpu->pc + 1));
 		break;
 	case CPU_ADDR_MODE_INDIRECT_Y:
-		v16 = cpu_read16_indirect_bug(cpu, (uint16_t)xnes_cpu_read8(cpu, cpu->pc + 1));
+		v16 = cpu_read16_indirect_bug(cpu, (uint16_t)nes_cpu_read8(cpu, cpu->pc + 1));
 		addr = v16 + (uint16_t)cpu->y;
 		if((v16 & 0xff00) != (addr & 0xff00))
 		{
@@ -1195,20 +1195,20 @@ int xnes_cpu_step(struct xnes_cpu_t * cpu)
 		}
 		break;
 	case CPU_ADDR_MODE_RELATIVE:
-		v8 = xnes_cpu_read8(cpu, cpu->pc + 1);
+		v8 = nes_cpu_read8(cpu, cpu->pc + 1);
 		if(v8 < 0x80)
 			addr = cpu->pc + 2 + v8;
 		else
 			addr = cpu->pc + 2 + v8 - 0x100;
 		break;
 	case CPU_ADDR_MODE_ZEROPAGE:
-		addr = xnes_cpu_read8(cpu, cpu->pc + 1);
+		addr = nes_cpu_read8(cpu, cpu->pc + 1);
 		break;
 	case CPU_ADDR_MODE_ZEROPAGE_X:
-		addr = (xnes_cpu_read8(cpu, cpu->pc + 1) + cpu->x) & 0xff;
+		addr = (nes_cpu_read8(cpu, cpu->pc + 1) + cpu->x) & 0xff;
 		break;
 	case CPU_ADDR_MODE_ZEROPAGE_Y:
-		addr = (xnes_cpu_read8(cpu, cpu->pc + 1) + cpu->y) & 0xff;
+		addr = (nes_cpu_read8(cpu, cpu->pc + 1) + cpu->y) & 0xff;
 		break;
 	default:
 		addr = 0;

@@ -524,7 +524,7 @@ void mapper_16k_w(uint16_t address, uint8_t data)
 		About the "gaiden_hack" bit :
 		I initially thought that it was a hack.
 		But it turns out the translation hack actually expects this :
-		https://github.com/libretro/smsplus-gx/issues/25
+		https://github.com/libretro/sms-gx/issues/25
 		
 		TODO : Probably reimplement this ?
 	*/

@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-#include <xnes.h>
+#include <nes.h>
 
-static inline int mapper1_prg_bank_offset(struct xnes_cartridge_t * c, int index)
+static inline int mapper1_prg_bank_offset(struct nes_cartridge_t * c, int index)
 {
 	if(index >= 0x80)
 		index -= 0x100;
@@ -35,7 +35,7 @@ static inline int mapper1_prg_bank_offset(struct xnes_cartridge_t * c, int index
 	return offset;
 }
 
-static inline int mapper1_chr_bank_offset(struct xnes_cartridge_t * c, int index)
+static inline int mapper1_chr_bank_offset(struct nes_cartridge_t * c, int index)
 {
 	if(index >= 0x80)
 		index -= 0x100;
@@ -46,7 +46,7 @@ static inline int mapper1_chr_bank_offset(struct xnes_cartridge_t * c, int index
 	return offset;
 }
 
-static void mapper1_update_offsets(struct xnes_cartridge_t * c)
+static void mapper1_update_offsets(struct nes_cartridge_t * c)
 {
 	switch(c->mapper.m.m1.prg_mode)
 	{
@@ -81,7 +81,7 @@ static void mapper1_update_offsets(struct xnes_cartridge_t * c)
 	}
 }
 
-static void mapper1_write_control(struct xnes_cartridge_t * c, uint8_t val)
+static void mapper1_write_control(struct nes_cartridge_t * c, uint8_t val)
 {
 	c->mapper.m.m1.control = val;
 	c->mapper.m.m1.chr_mode = (val >> 4) & 0x1;
@@ -89,16 +89,16 @@ static void mapper1_write_control(struct xnes_cartridge_t * c, uint8_t val)
 	switch(val & 0x3)
 	{
 	case 0:
-		c->mirror = XNES_CARTRIDGE_MIRROR_SINGLE0;
+		c->mirror = NES_CARTRIDGE_MIRROR_SINGLE0;
 		break;
 	case 1:
-		c->mirror = XNES_CARTRIDGE_MIRROR_SINGLE1;
+		c->mirror = NES_CARTRIDGE_MIRROR_SINGLE1;
 		break;
 	case 2:
-		c->mirror = XNES_CARTRIDGE_MIRROR_VERTICAL;
+		c->mirror = NES_CARTRIDGE_MIRROR_VERTICAL;
 		break;
 	case 3:
-		c->mirror = XNES_CARTRIDGE_MIRROR_HORIZONTAL;
+		c->mirror = NES_CARTRIDGE_MIRROR_HORIZONTAL;
 		break;
 	default:
 		break;
@@ -106,25 +106,25 @@ static void mapper1_write_control(struct xnes_cartridge_t * c, uint8_t val)
 	mapper1_update_offsets(c);
 }
 
-static void mapper1_write_chr_bank0(struct xnes_cartridge_t * c, uint8_t val)
+static void mapper1_write_chr_bank0(struct nes_cartridge_t * c, uint8_t val)
 {
 	c->mapper.m.m1.chr_bank0 = val;
 	mapper1_update_offsets(c);
 }
 
-static void mapper1_write_chr_bank1(struct xnes_cartridge_t * c, uint8_t val)
+static void mapper1_write_chr_bank1(struct nes_cartridge_t * c, uint8_t val)
 {
 	c->mapper.m.m1.chr_bank1 = val;
 	mapper1_update_offsets(c);
 }
 
-static void mapper1_write_prg_bank(struct xnes_cartridge_t * c, uint8_t val)
+static void mapper1_write_prg_bank(struct nes_cartridge_t * c, uint8_t val)
 {
 	c->mapper.m.m1.prg_bank = val & 0xf;
 	mapper1_update_offsets(c);
 }
 
-static void mapper1_write_register(struct xnes_cartridge_t * c, uint16_t addr, uint8_t val)
+static void mapper1_write_register(struct nes_cartridge_t * c, uint16_t addr, uint8_t val)
 {
 	switch(addr)
 	{
@@ -145,7 +145,7 @@ static void mapper1_write_register(struct xnes_cartridge_t * c, uint16_t addr, u
 	}
 }
 
-static void mapper1_load_register(struct xnes_cartridge_t * c, uint16_t addr, uint8_t val)
+static void mapper1_load_register(struct nes_cartridge_t * c, uint16_t addr, uint8_t val)
 {
 	if((val & 0x80) == 0x80)
 	{
@@ -165,9 +165,9 @@ static void mapper1_load_register(struct xnes_cartridge_t * c, uint16_t addr, ui
 	}
 }
 
-static uint8_t xnes_mapper1_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper1_cpu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 	int bank, offset;
 
 	switch(addr >> 13)
@@ -194,9 +194,9 @@ static uint8_t xnes_mapper1_cpu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper1_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper1_cpu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 
 	switch(addr >> 13)
 	{
@@ -220,9 +220,9 @@ static void xnes_mapper1_cpu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8
 	}
 }
 
-static uint8_t xnes_mapper1_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
+static uint8_t nes_mapper1_ppu_read(struct nes_ctx_t * ctx, uint16_t addr)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 	int bank, offset;
 
 	switch(addr >> 13)
@@ -251,9 +251,9 @@ static uint8_t xnes_mapper1_ppu_read(struct xnes_ctx_t * ctx, uint16_t addr)
 	return 0;
 }
 
-static void xnes_mapper1_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8_t val)
+static void nes_mapper1_ppu_write(struct nes_ctx_t * ctx, uint16_t addr, uint8_t val)
 {
-	struct xnes_cartridge_t * c = ctx->cartridge;
+	struct nes_cartridge_t * c = ctx->cartridge;
 	int bank, offset;
 
 	switch(addr >> 13)
@@ -285,12 +285,12 @@ static void xnes_mapper1_ppu_write(struct xnes_ctx_t * ctx, uint16_t addr, uint8
 /*
  * SxROM
  */
-void xnes_mapper1_init(struct xnes_cartridge_t * c)
+void nes_mapper1_init(struct nes_cartridge_t * c)
 {
-	c->mapper.cpu_read = xnes_mapper1_cpu_read;
-	c->mapper.cpu_write = xnes_mapper1_cpu_write;
-	c->mapper.ppu_read = xnes_mapper1_ppu_read;
-	c->mapper.ppu_write = xnes_mapper1_ppu_write;
+	c->mapper.cpu_read = nes_mapper1_cpu_read;
+	c->mapper.cpu_write = nes_mapper1_cpu_write;
+	c->mapper.ppu_read = nes_mapper1_ppu_read;
+	c->mapper.ppu_write = nes_mapper1_ppu_write;
 	c->mapper.apu_step = NULL;
 	c->mapper.ppu_step = NULL;
 }

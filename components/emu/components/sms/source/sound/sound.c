@@ -41,14 +41,14 @@ static int32_t *smptab;
 static int32_t smptab_len;
 
 #ifndef MAXIM_PSG
-sn76489_t psg_sn;
+
 #endif
 
 #ifdef MAME_PSG
 static uint8_t machine_psg = 0;
 #endif
 
-uint32_t SMSPLUS_sound_init(void)
+uint32_t SMS_sound_init(void)
 {
 	static uint8_t *fmbuf = NULL;
 	static uint8_t *psgbuf = NULL;
@@ -75,16 +75,16 @@ uint32_t SMSPLUS_sound_init(void)
 		if (!psgbuf) return 0;
 		memcpy (psgbuf, SN76489_GetContextPtr (0),SN76489_GetContextSize ());
 		#else
-		psgbuf = malloc(sizeof(sn76489_t));
+		psgbuf = malloc(SN76489_GetContextSize());
 		if (!psgbuf) return 0;
-		memcpy (&psg_sn, psgbuf, sizeof(sn76489_t));
+		memcpy (SN76489_GetContextPtr(0), psgbuf, SN76489_GetContextSize());
 		#endif
 		fmbuf = malloc(FM_GetContextSize());
 		if (!fmbuf) return 0;
 		FM_GetContext(fmbuf);
 		
 		/* If we are reinitializing, shut down sound emulation */
-		SMSPLUS_sound_shutdown();
+		SMS_sound_shutdown();
 	}
 	
 	/* Disable sound until initialization is complete */
@@ -96,7 +96,7 @@ uint32_t SMSPLUS_sound_init(void)
 
 	/* Assign stream mixing callback if none provided */
 	if(!snd.mixer_callback)
-		snd.mixer_callback = SMSPLUS_sound_mixer_callback;
+		snd.mixer_callback = SMS_sound_mixer_callback;
 
 	/* Calculate number of samples generated per frame */
 	snd.sample_count = (snd.sample_rate / snd.fps);
@@ -172,9 +172,9 @@ uint32_t SMSPLUS_sound_init(void)
     SN76489_Init(0, snd.psg_clock, snd.sample_rate);
     SN76489_Config(0, MUTE_ALLON, BOOST_ON, VOL_FULL, (sms.console < CONSOLE_SMS) ? FB_SC3000 : FB_SEGAVDP);
     #else
-	sn76489_init(&psg_sn, (float)snd.psg_clock, (float)snd.sample_rate, 
-	(sms.console < CONSOLE_SMS) ? SN76489_NOISE_BITS_SG1000 : SN76489_NOISE_BITS_SMS, 
-	(sms.console < CONSOLE_SMS) ? SN76489_NOISE_TAPPED_SG1000 : SN76489_NOISE_TAPPED_SMS);
+	SN76489_Init(0, snd.psg_clock, snd.sample_rate);
+	
+	
 	#endif
 
 	/* Set up YM2413 emulation */
@@ -188,7 +188,7 @@ uint32_t SMSPLUS_sound_init(void)
 		#elif defined(MAXIM_PSG)
 		memcpy (SN76489_GetContextPtr (0),psgbuf,SN76489_GetContextSize ());
 		#else
-		memcpy (&psg_sn, psgbuf, sizeof(sn76489_t));
+		memcpy (SN76489_GetContextPtr(0), psgbuf, SN76489_GetContextSize());
 		#endif
 		FM_SetContext(fmbuf);
 		free(fmbuf);
@@ -202,7 +202,7 @@ uint32_t SMSPLUS_sound_init(void)
 }
 
 
-void SMSPLUS_sound_shutdown(void)
+void SMS_sound_shutdown(void)
 {
 	uint32_t i;
 	
@@ -242,7 +242,7 @@ void SMSPLUS_sound_shutdown(void)
 }
 
 
-void SMSPLUS_sound_reset(void)
+void SMS_sound_reset(void)
 {
 	if(!snd.enabled)
 		return;
@@ -253,9 +253,9 @@ void SMSPLUS_sound_reset(void)
 	#elif defined(MAXIM_PSG)
 	SN76489_Reset(0);
 	#else
-	sn76489_reset(&psg_sn, (float)snd.psg_clock, (float)snd.sample_rate,
-	(sms.console < CONSOLE_SMS) ? SN76489_NOISE_BITS_SG1000 : SN76489_NOISE_BITS_SMS, 
-	(sms.console < CONSOLE_SMS) ? SN76489_NOISE_TAPPED_SG1000 : SN76489_NOISE_TAPPED_SMS);
+	SN76489_Reset(0);
+	
+	
 	#endif
 	
 	/* Reset YM2413 emulator */
@@ -263,7 +263,7 @@ void SMSPLUS_sound_reset(void)
 }
 
 
-void SMSPLUS_sound_update(int32_t line)
+void SMS_sound_update(int32_t line)
 {
 	int16_t *fm[2], *psg[2];
 
@@ -284,7 +284,7 @@ void SMSPLUS_sound_update(int32_t line)
 		#elif defined(MAXIM_PSG)
 		SN76489_Update(0, psg, snd.sample_count - snd.done_so_far);
 		#else
-		sn76489_execute_samples(&psg_sn, psg[0], psg[1], snd.sample_count - snd.done_so_far);
+		do { int16_t *buf[2] = {psg[0], psg[1]}; SN76489_Update(0, buf, snd.sample_count - snd.done_so_far); } while(0);
 		#endif
 
 		/* Generate YM2413 sample data */
@@ -312,7 +312,7 @@ void SMSPLUS_sound_update(int32_t line)
 		#elif defined(MAXIM_PSG)
 		SN76489_Update(0, psg, tinybit);
 		#else
-		sn76489_execute_samples(&psg_sn, psg[0], psg[1], tinybit);
+		do { int16_t *buf[2] = {psg[0], psg[1]}; SN76489_Update(0, buf, tinybit); } while(0);
 		#endif
 
 		/* Generate YM2413 sample data */
@@ -324,7 +324,7 @@ void SMSPLUS_sound_update(int32_t line)
 }
 
 /* Generic FM+PSG stereo mixer callback */
-void SMSPLUS_sound_mixer_callback(int16_t *output, int32_t length)
+void SMS_sound_mixer_callback(int16_t *output, int32_t length)
 {
 	int32_t i;
 	for(i = 0; i < length; i++)
@@ -347,7 +347,7 @@ void psg_stereo_w(int32_t data)
 	#elif defined(MAXIM_PSG)
 	SN76489_GGStereoWrite(0, data);
 	#else
-	sn76489_set_output_channels(&psg_sn, data);
+	
 	#endif
 }
 
@@ -360,7 +360,7 @@ void psg_write(int32_t data)
 	#elif defined(MAXIM_PSG)
 	SN76489_Write(0, data);
 	#else
-	sn76489_write(&psg_sn, data);
+	SN76489_Write(0, data);
 	#endif
 }
 

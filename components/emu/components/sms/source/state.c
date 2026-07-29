@@ -33,7 +33,7 @@
 #include "shared.h"
 
 #if !defined(MAXIM_PSG) && !defined(MAME_PSG)
-extern sn76489_t psg_sn;
+
 #endif
 
 uint32_t system_save_state(FILE* fd)
@@ -58,9 +58,9 @@ uint32_t system_save_state(FILE* fd)
     #ifdef MAXIM_PSG
     fwrite(SN76489_GetContextPtr(0), SN76489_GetContextSize(), sizeof(int8_t), fd);
     #elif defined(MAME_PSG)
-    fwrite(&PSG, sizeof(sn76489_t), sizeof(int8_t), fd);
+    fwrite(&PSG, SN76489_GetContextSize(), sizeof(int8_t), fd);
     #else
-    fwrite(&psg_sn, sizeof(sn76489_t), sizeof(int8_t), fd);
+    fwrite(SN76489_GetContextPtr(0), SN76489_GetContextSize(), sizeof(int8_t), fd);
     #endif
 	
 	return 0;
@@ -82,7 +82,7 @@ void system_load_state(FILE* fd)
 
 	/** restore video & audio settings (needed if timing changed) ***/
 	vdp_init();
-	SMSPLUS_sound_init();
+	SMS_sound_init();
 
 	fread(cart.fcr, 4, sizeof(int8_t), fd);
 
@@ -105,14 +105,14 @@ void system_load_state(FILE* fd)
     SN76489_SetContext(0, buf);
     free(buf);
     #elif defined(MAME_PSG)
-    buf = malloc(sizeof(sn76489_t));
-    fread(buf, sizeof(sn76489_t), sizeof(int8_t), fd);
-    memcpy(&PSG, buf, sizeof(sn76489_t));
+    buf = malloc(SN76489_GetContextSize());
+    fread(buf, SN76489_GetContextSize(), sizeof(int8_t), fd);
+    memcpy(&PSG, buf, SN76489_GetContextSize());
     free(buf);
     #else
-    buf = malloc(sizeof(sn76489_t));
-    fread(buf, sizeof(sn76489_t), sizeof(int8_t), fd);
-    memcpy(&psg_sn, buf, sizeof(sn76489_t));
+    buf = malloc(SN76489_GetContextSize());
+    fread(buf, SN76489_GetContextSize(), sizeof(int8_t), fd);
+    memcpy(SN76489_GetContextPtr(0), buf, SN76489_GetContextSize());
     free(buf);
     #endif
 
