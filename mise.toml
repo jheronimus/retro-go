@@ -1,0 +1,5 @@
+[tools]
+just = "latest"
+python = "3.11"
+cmake = "latest"
+ninja = "latest"
