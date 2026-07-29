@@ -1,0 +1,9 @@
+sed -i '' 's/io.pad_status\[0\] = 0;/io.button_status[0] = 0;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x10;/io.button_status[0] |= IO_BUTTON_UP;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x40;/io.button_status[0] |= IO_BUTTON_DOWN;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x80;/io.button_status[0] |= IO_BUTTON_LEFT;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x20;/io.button_status[0] |= IO_BUTTON_RIGHT;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x01;/io.button_status[0] |= IO_BUTTON_I;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x02;/io.button_status[0] |= IO_BUTTON_II;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x04;/io.button_status[0] |= IO_BUTTON_SELECT;/' main/main_pce.c
+sed -i '' 's/io.pad_status\[0\] |= 0x08;/io.button_status[0] |= IO_BUTTON_RUN;/' main/main_pce.c

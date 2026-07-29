@@ -1,0 +1,13 @@
+set(COMPONENT_ADD_INCLUDEDIRS "." "src")
+set(COMPONENT_REQUIRES "retro-go")
+set(COMPONENT_SRCS 
+ppu.c
+cpu.c
+walnut_cgb_impl.c
+mapper/dummy.c
+core.c
+tmp.c
+mmu.c
+)
+register_component()
+rg_setup_compile_options(-O3 -Wno-error=format)

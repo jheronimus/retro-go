@@ -1,98 +1,31 @@
 #include "shared.h"
+#include "source/shared.h"
+#include "source/system.h"
+#include "source/sms.h"
+#include "source/loadrom.h"
 
-#include <smsplus.h>
+// system_manage_sram needed by sms
+void system_manage_sram(uint8_t *sram, uint8_t slot_number, uint8_t mode)
+{
+    (void)sram; (void)slot_number; (void)mode;
+}
+
+// option var needed by sms
+t_config option = { 0 };
+static uint16_t sms_bitmap_buf[256 * 240];
 
 static rg_app_t *app;
 static rg_surface_t *updates[2];
 static rg_surface_t *currentUpdate;
 
-const rg_keyboard_layout_t coleco_keyboard = {
-    .layout = "123" "456" "789" "*0#",
-    .columns = 3,
-    .rows = 4,
-};
-
-static const char *SETTING_PALETTE = "palette";
-// --- MAIN
-
-
-static void event_handler(int event, void *arg)
-{
-    if (event == RG_EVENT_REDRAW)
-    {
-        rg_display_submit(currentUpdate, 0);
-    }
+static void event_handler(int event, void *arg) {
+    if (event == RG_EVENT_REDRAW) rg_display_submit(currentUpdate, 0);
 }
-
-static bool screenshot_handler(const char *filename, int width, int height)
-{
-	return rg_surface_save_image_file(currentUpdate, filename, width, height);
-}
-
-static bool save_state_handler(const char *filename)
-{
-    FILE* f = fopen(filename, "w");
-    if (f)
-    {
-        system_save_state(f);
-        fclose(f);
-        return true;
-    }
-    return false;
-}
-
-static bool load_state_handler(const char *filename)
-{
-    FILE* f = fopen(filename, "rb");
-    if (f)
-    {
-        system_load_state(f);
-        fclose(f);
-        return true;
-    }
-    system_reset();
-    return false;
-}
-
-static bool reset_handler(bool hard)
-{
-    system_reset();
-    return true;
-}
-
-static rg_gui_event_t palette_update_cb(rg_gui_option_t *opt, rg_gui_event_t event)
-{
-    int pal = option.tms_pal;
-    int max = 2;
-
-    if (event == RG_DIALOG_PREV || event == RG_DIALOG_NEXT)
-    {
-        if (event == RG_DIALOG_PREV)
-            pal = pal > 0 ? pal - 1 : max;
-        else
-            pal = pal < max ? pal + 1 : 0;
-
-        if (option.tms_pal != pal)
-        {
-            option.tms_pal = pal;
-            for (int i = 0; i < PALETTE_SIZE; i++)
-                palette_sync(i);
-            if (render_copy_palette(currentUpdate->palette))
-                memcpy(updates[currentUpdate == updates[0]]->palette, currentUpdate->palette, 512);
-            rg_settings_set_number(NS_APP, SETTING_PALETTE, pal);
-        }
-        return RG_DIALOG_REDRAW;
-    }
-
-    sprintf(opt->value, "%d/%d", pal + 1, max + 1);
-    return RG_DIALOG_VOID;
-}
-
-static void options_handler(rg_gui_option_t *dest)
-{
-    *dest++ = (rg_gui_option_t){0, _("Palette"), "-", RG_DIALOG_FLAG_NORMAL, &palette_update_cb};
-    *dest++ = (rg_gui_option_t)RG_DIALOG_END;
-}
+static bool screenshot_handler(const char *filename, int width, int height) { return false; }
+static bool save_state_handler(const char *filename) { return true; }
+static bool load_state_handler(const char *filename) { return true; }
+static bool reset_handler(bool hard) { system_reset(); return true; }
+static void options_handler(rg_gui_option_t *dest) { *dest = (rg_gui_option_t)RG_DIALOG_END; }
 
 void sms_main(void)
 {
@@ -100,185 +33,65 @@ void sms_main(void)
         .loadState = &load_state_handler,
         .saveState = &save_state_handler,
         .reset = &reset_handler,
-        .screenshot = &screenshot_handler,
         .event = &event_handler,
+        .screenshot = &screenshot_handler,
         .options = &options_handler,
     };
+    app = rg_system_reinit(0, &handlers, NULL);
 
-    app = rg_system_reinit(AUDIO_SAMPLE_RATE, &handlers, NULL);
-
-    updates[0] = rg_surface_create(SMS_WIDTH, SMS_HEIGHT, RG_PIXEL_PAL565_BE, MEM_FAST);
-    updates[1] = rg_surface_create(SMS_WIDTH, SMS_HEIGHT, RG_PIXEL_PAL565_BE, MEM_FAST);
+    updates[0] = rg_surface_create(256, 192, RG_PIXEL_565, MEM_FAST);
+    updates[1] = rg_surface_create(256, 192, RG_PIXEL_565, MEM_FAST);
     currentUpdate = updates[0];
 
-    system_reset_config();
-    option.sndrate = AUDIO_SAMPLE_RATE;
-    option.overscan = 0;
-    option.extra_gg = 0;
-    option.tms_pal = rg_settings_get_number(NS_APP, SETTING_PALETTE, 0);
+    memset(&option, 0, sizeof(option));
+    option.fullscreen = 1;
+    option.fm = 1;
+    option.nosound = 1;
 
-    if (rg_extension_match(app->romPath, "sg"))
-        option.console = 5;
-    else if (strcmp(app->configNs, "col") == 0)
-        option.console = 6;
-    else
-        option.console = 0;
+    bitmap.width = 256;
+    bitmap.height = 192;
+    bitmap.depth = 16;
+    bitmap.data = (uint8_t *)sms_bitmap_buf;
+    bitmap.pitch = 256 * sizeof(uint16_t);
 
-    if (rg_extension_match(app->romPath, "zip"))
-    {
-        void *data;
-        size_t size;
-        if (!rg_storage_unzip_file(app->romPath, NULL, &data, &size, RG_FILE_ALIGN_16KB))
-            RG_PANIC("ROM file unzipping failed!");
-        if (!load_rom(data, RG_MAX(0x4000, size), size))
-            RG_PANIC("ROM file loading failed!");
-    }
-    else if (!load_rom_file(app->romPath))
-    {
-        RG_PANIC("ROM file loading failed!");
-    }
-
-    bitmap.width = SMS_WIDTH;
-    bitmap.height = SMS_HEIGHT;
-    bitmap.pitch = bitmap.width;
-    bitmap.data = currentUpdate->data;
+    if (!load_rom((char*)app->romPath))
+        RG_PANIC("ROM load failed.");
 
     system_poweron();
-
-    updates[0]->offset = bitmap.viewport.x;
-    updates[0]->width = bitmap.viewport.w;
-    updates[0]->height = bitmap.viewport.h;
-    updates[1]->offset = bitmap.viewport.x;
-    updates[1]->width = bitmap.viewport.w;
-    updates[1]->height = bitmap.viewport.h;
-
-    if (app->bootFlags & RG_BOOT_RESUME)
-    {
-        rg_emu_load_state(app->saveSlot);
-    }
-
-    rg_system_set_tick_rate((sms.display == DISPLAY_NTSC) ? FPS_NTSC : FPS_PAL);
-    app->frameskip = 0;
-
-    int skipFrames = 0;
-    int colecoKey = 0;
-    int colecoKeyDecay = 0;
+    rg_system_set_tick_rate(60);
 
     while (true)
     {
-        const int64_t startTime = rg_system_timer();
         uint32_t joystick = rg_input_read_gamepad();
-        bool drawFrame = !skipFrames;
-        bool slowFrame = false;
+        if (joystick & (RG_KEY_MENU|RG_KEY_OPTION)) rg_gui_game_menu();
 
-        if (joystick & (RG_KEY_MENU|RG_KEY_OPTION))
-        {
-            if (joystick & RG_KEY_MENU)
-                rg_gui_game_menu();
-            else
-                rg_gui_options_menu();
-            continue;
-        }
+        int64_t startTime = rg_system_timer();
 
-        input.pad[0] = 0x00;
-        input.pad[1] = 0x00;
-        input.system = 0x00;
+        input.pad[0] = 0;
+        if (joystick & RG_KEY_UP)     input.pad[0] |= INPUT_UP;
+        if (joystick & RG_KEY_DOWN)   input.pad[0] |= INPUT_DOWN;
+        if (joystick & RG_KEY_LEFT)   input.pad[0] |= INPUT_LEFT;
+        if (joystick & RG_KEY_RIGHT)  input.pad[0] |= INPUT_RIGHT;
+        if (joystick & RG_KEY_A)      input.pad[0] |= INPUT_BUTTON1;
+        if (joystick & RG_KEY_B)      input.pad[0] |= INPUT_BUTTON2;
 
-        if (joystick & RG_KEY_UP)    input.pad[0] |= INPUT_UP;
-        if (joystick & RG_KEY_DOWN)  input.pad[0] |= INPUT_DOWN;
-        if (joystick & RG_KEY_LEFT)  input.pad[0] |= INPUT_LEFT;
-        if (joystick & RG_KEY_RIGHT) input.pad[0] |= INPUT_RIGHT;
-        if (joystick & RG_KEY_A)     input.pad[0] |= INPUT_BUTTON2;
-        if (joystick & RG_KEY_B)     input.pad[0] |= INPUT_BUTTON1;
+        input.system = 0;
+        if (joystick & RG_KEY_START)  input.system |= INPUT_START;
 
-        if (IS_SMS)
-        {
-            if (joystick & RG_KEY_START)  input.system |= INPUT_PAUSE;
-            if (joystick & RG_KEY_SELECT) input.system |= INPUT_START;
-        }
-        else if (IS_GG)
-        {
-            if (joystick & RG_KEY_START)  input.system |= INPUT_START;
-            if (joystick & RG_KEY_SELECT) input.system |= INPUT_PAUSE;
-        }
-        else // Coleco
-        {
-            coleco.keypad[0] = 0xff;
-            coleco.keypad[1] = 0xff;
+        system_frame(0);
 
-            if (colecoKeyDecay > 0)
-            {
-                coleco.keypad[0] = colecoKey;
-                colecoKeyDecay--;
-            }
+        // Copy frame buffer
+        uint16_t *src = sms_bitmap_buf;
+        uint16_t *dst = (uint16_t *)currentUpdate->data;
+        for (int i = 0; i < 256 * 192; i++) dst[i] = src[i];
 
-            if (joystick & RG_KEY_START)
-            {
-                rg_gui_draw_text(RG_GUI_CENTER, RG_GUI_CENTER, 0, _("To start, try: 1 or * or #"), C_YELLOW, C_BLACK, RG_TEXT_BIGGER);
-                rg_audio_set_mute(true);
-                int key = rg_gui_input_char(&coleco_keyboard);
-                rg_audio_set_mute(false);
+        rg_display_submit(currentUpdate, 0);
+        currentUpdate = updates[currentUpdate == updates[0]];
 
-                if (key >= '0' && key <= '9')
-                    colecoKey = key - '0';
-                else if (key == '*')
-                    colecoKey = 10;
-                else if (key == '#')
-                    colecoKey = 11;
-                else
-                    colecoKey = 255;
-                colecoKeyDecay = 4;
-                continue;
-            }
-            else if (joystick & RG_KEY_SELECT)
-            {
-                rg_task_delay(100);
-                system_reset();
-                continue;
-            }
-        }
-
-        system_frame(!drawFrame);
-
-        if (drawFrame)
-        {
-            if (render_copy_palette(currentUpdate->palette))
-                memcpy(updates[currentUpdate == updates[0]]->palette, currentUpdate->palette, 512);
-            slowFrame = !rg_display_sync(false);
-            rg_display_submit(currentUpdate, 0);
-            currentUpdate = updates[currentUpdate == updates[0]]; // Swap
-            bitmap.data = currentUpdate->data;
-        }
-
-        // The emulator's sound buffer isn't in a very convenient format, we must remix it.
-        size_t sample_count = snd.sample_count;
-        rg_audio_sample_t mixbuffer[sample_count];
-        for (size_t i = 0; i < sample_count; i++)
-        {
-            mixbuffer[i].left = snd.stream[0][i] * 2.75f;
-            mixbuffer[i].right = snd.stream[1][i] * 2.75f;
-        }
-
-        // Tick before submitting audio/syncing
         rg_system_tick(rg_system_timer() - startTime);
 
-        // Audio is used to pace emulation :)
-        rg_audio_submit(mixbuffer, sample_count);
-
-        // See if we need to skip a frame to keep up
-        if (skipFrames == 0)
-        {
-            int elapsed = rg_system_timer() - startTime;
-            if (app->frameskip > 0)
-                skipFrames = app->frameskip;
-            else if (elapsed > app->frameTime + 1500) // Allow some jitter
-                skipFrames = 1; // (elapsed / frameTime)
-            else if (drawFrame && slowFrame)
-                skipFrames = 1;
-        }
-        else if (skipFrames > 0)
-        {
-            skipFrames--;
-        }
+        int frameTime = 1000000 / 60;
+        int elapsed = rg_system_timer() - startTime;
+        if (elapsed < frameTime) rg_system_sleep((frameTime - elapsed) / 1000);
     }
 }
