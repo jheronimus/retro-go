@@ -8,33 +8,27 @@
 - [License](#license)
 
 # Description
-Retro-Go is a firmware to play retro games on ESP32-based devices (officially supported are
-ODROID-GO and MRGC-G32, check [this list for other devices](components/retro-go/README.md)).
-The project consists of a launcher and half a dozen applications that have been heavily
-optimized to reduce their cpu, memory, and flash needs without reducing compatibility!
+Retro-Go (LibEmu Experimental Fork) is a specialized experimental firmware branch designed to play retro games on ESP32-based devices.
+
+This fork departs from the standard Retro-Go emulator bundle by ripping out all original emulator cores and substituting them with highly modular, purely headless, C99-standardized engines based on:
+- **libxnes** (NES)
+- **walnut_cgb** (Game Boy & Game Boy Color)
+- **temper** (PC Engine / TurboGrafx-16)
+- **smsplus-gx** (Sega Master System & Game Gear)
+
+These cores have been meticulously refactored to decouple all OS-specific dependencies, ensuring extreme portability, memory constraint compliance, and continuous cycle-accuracy benchmarking via the automated `oracle` headless test suite.
 
 ### Supported systems:
-- Nintendo: **NES, SNES (slow), Gameboy, Gameboy Color, Game & Watch**
-- Sega: **SG-1000, Master System, Mega Drive / Genesis, Game Gear**
-- Coleco: **Colecovision**
+- Nintendo: **NES, Gameboy, Gameboy Color**
+- Sega: **Master System, Game Gear**
 - NEC: **PC Engine**
-- Atari: **Lynx**
-- Others: **DOOM** (including mods!)
 
-### Retro-Go features:
-- In-game menu
-- Favorites and recently played
-- GB color palettes, RTC adjust and save
-- NES color palettes, PAL roms, NSF support
-- More emulators and applications
-- Scaling and filtering options
-- Better performance and compatibility
-- Turbo Speed/Fast forward
-- Customizable launcher
-- Cover art and save state previews
-- Multiple save slots per game
-- Wifi file manager
-- And more!
+### Experimental Features:
+- Headless C99 portable core execution
+- Automated memory footprint testing via ESP-IDF `size` analysis
+- Cycle-accurate `oracle` regression CLI harnesses
+- Integrated Retro-Go ESP-IDF launcher backend
+- (Plus all standard Retro-Go launcher features like scaling, wifi, etc!)
 
 ### Screenshots
 ![Preview](assets/retro-go-preview.jpg)

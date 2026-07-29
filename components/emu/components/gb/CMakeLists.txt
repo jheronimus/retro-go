@@ -1,5 +1,5 @@
 set(COMPONENT_ADD_INCLUDEDIRS "." "src")
-set(COMPONENT_REQUIRES "retro-go")
+set(COMPONENT_REQUIRES "shared")
 set(COMPONENT_SRCS 
 ppu.c
 cpu.c

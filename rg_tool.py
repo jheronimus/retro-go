@@ -14,15 +14,12 @@ import zlib
 DEFAULT_TARGET = os.getenv("RG_TOOL_TARGET", "odroid-go")
 DEFAULT_BAUD = os.getenv("RG_TOOL_BAUD", "1152000")
 DEFAULT_PORT = os.getenv("RG_TOOL_PORT", "COM3")
-DEFAULT_APPS = os.getenv("RG_TOOL_APPS", "launcher libxnes smsplus-gx temper walnut_cgb")
+DEFAULT_APPS = os.getenv("RG_TOOL_APPS", "launcher emu")
 PROJECT_NAME = os.getenv("PROJECT_NAME", "Retro-Go")
 PROJECT_ICON = os.getenv("PROJECT_ICON", "assets/icon.raw")
 PROJECT_APPS = {
   'launcher':     [0, 16, 1048576],
-  'libxnes':      [0, 16, 1048576],
-  'smsplus-gx':   [0, 16, 1048576],
-  'temper':       [0, 16, 1048576],
-  'walnut_cgb':   [0, 16, 1048576],
+  'emu':          [0, 16, 1048576],
 }
 # PROJECT_APPS = {}
 # for t in glob.glob("*/CMakeLists.txt"):
@@ -38,7 +35,7 @@ except:
 FW_FORMAT = "none"
 
 TARGETS = []
-for t in glob.glob("components/retro-go/targets/*/config.h"):
+for t in glob.glob("components/shared/targets/*/config.h"):
     TARGETS.append(os.path.basename(os.path.dirname(t)))
 
 IDF_TARGET = os.getenv("IDF_TARGET", "esp32")
@@ -74,9 +71,9 @@ def build_image(apps, output_file, img_type="odroid", fatsize=0, target="unknown
 
     if img_type not in ["odroid", "esplay"]:
         print("Building bootloader...")
-        bootloader_file = os.path.join(os.getcwd(), list(apps)[0], "build", "bootloader", "bootloader.bin")
+        bootloader_file = os.path.join(os.getcwd(), "components", list(apps)[0], "build", "bootloader", "bootloader.bin")
         if not os.path.exists(bootloader_file):
-            run([IDF_PY, "bootloader"], cwd=os.path.join(os.getcwd(), list(apps)[0]))
+            run([IDF_PY, "bootloader"], cwd=os.path.join(os.getcwd(), "components", list(apps)[0]))
         args += ["--target", target, "--bootloader", bootloader_file]
 
     args += [output_file]
@@ -88,7 +85,7 @@ def build_image(apps, output_file, img_type="odroid", fatsize=0, target="unknown
         if part[0] == 0 and (part[1] & 0xF0) == 0x10:  # Rewrite OTA indexes to maintain order
             subtype = ota_next_id
             ota_next_id += 1
-        args += [str(part[0]), str(subtype), str(part[2]), app, os.path.join(app, "build", app + ".bin")]
+        args += [str(part[0]), str(subtype), str(part[2]), app, os.path.join("components", app, "build", app + ".bin")]
     if fatsize:
         args += ["1", "129", fatsize, "vfs", "none"]
 
@@ -98,12 +95,12 @@ def build_image(apps, output_file, img_type="odroid", fatsize=0, target="unknown
 def clean_app(app):
     print("Cleaning up app '%s'..." % app)
     try:
-        os.unlink(os.path.join(app, "sdkconfig"))
-        os.unlink(os.path.join(app, "sdkconfig.old"))
+        os.unlink(os.path.join("components", app, "sdkconfig"))
+        os.unlink(os.path.join("components", app, "sdkconfig.old"))
     except:
         pass
     try:
-        shutil.rmtree(os.path.join(app, "build"))
+        shutil.rmtree(os.path.join("components", app, "build"))
     except:
         pass
     print("Done.\n")
@@ -122,7 +119,7 @@ def build_app(app, device_type, with_profiling=False, no_networking=False, is_re
     with open("partitions.csv", "w") as f:
         f.write("# This table isn't used, it's just needed to avoid esp-idf build failures.\n")
         f.write("dummy, app, ota_0, 65536, 3145728\n")
-    run(args, cwd=os.path.join(os.getcwd(), app))
+    run(args, cwd=os.path.join(os.getcwd(), "components", app))
     print("Done.\n")
 
 
@@ -134,7 +131,7 @@ def flash_app(app, port, baudrate=1152000):
         print("Reading device's partition table...")
         run([ESPTOOL_PY, "read_flash", "0x8000", "0x1000", "partitions.bin"], check=False)
         run([GEN_ESP32PART_PY, "partitions.bin"], check=False)
-    app_bin = os.path.join(app, "build", app + ".bin")
+    app_bin = os.path.join("components", app, "build", app + ".bin")
     print(f"Flashing '{app_bin}' to port {port}")
     run([PARTTOOL_PY, "--partition-table-file", "partitions.bin", "write_partition", "--partition-name", app, "--input", app_bin])
     print("Done.\n")
@@ -151,7 +148,7 @@ def flash_image(image_file, port, baudrate=1152000):
 
 def monitor_app(app, port, baudrate=115200):
     print(f"Starting monitor for app {app} on port {port}")
-    elf_file = os.path.join(os.getcwd(), app, "build", app + ".elf")
+    elf_file = os.path.join(os.getcwd(), "components", app, "build", app + ".elf")
     if os.path.exists(elf_file):
         run([IDF_MONITOR_PY, "--port", port, elf_file])
     else: # We must pass a file to idf_monitor.py but it doesn't have to be valid with -d
@@ -183,16 +180,16 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-if os.path.exists(f"components/retro-go/targets/{args.target}/env.py"):
-    with open(f"components/retro-go/targets/{args.target}/env.py", "rb") as f:
+if os.path.exists(f"components/shared/targets/{args.target}/env.py"):
+    with open(f"components/shared/targets/{args.target}/env.py", "rb") as f:
         prev_idf_target = os.getenv("IDF_TARGET")
         exec(f.read())
          # Detect if env.py modified os.environ[IDF_TARGET] instead of IDF_TARGET (old behavior)
         if os.getenv("IDF_TARGET") != prev_idf_target:
             IDF_TARGET = os.getenv("IDF_TARGET")
 
-if os.path.exists(f"components/retro-go/targets/{args.target}/sdkconfig"):
-    os.putenv("SDKCONFIG_DEFAULTS", os.path.abspath(f"components/retro-go/targets/{args.target}/sdkconfig"))
+if os.path.exists(f"components/shared/targets/{args.target}/sdkconfig"):
+    os.putenv("SDKCONFIG_DEFAULTS", os.path.abspath(f"components/shared/targets/{args.target}/sdkconfig"))
 os.putenv("IDF_TARGET", IDF_TARGET)
 
 command = args.command

@@ -1,5 +1,5 @@
 set(COMPONENT_ADD_INCLUDEDIRS "." "source")
-set(COMPONENT_REQUIRES "retro-go")
+set(COMPONENT_REQUIRES "shared")
 set(COMPONENT_SRCS 
 source/cpu_cores/z80/z80.c
 source/state.c
