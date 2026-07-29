@@ -1,8 +1,7 @@
 #include "shared.h"
-#include "source/shared.h"
-#include "source/system.h"
-#include "source/sms.h"
-#include "source/loadrom.h"
+#include "system.h"
+#include "sms.h"
+#include "loadrom.h"
 
 // system_manage_sram needed by sms
 void system_manage_sram(uint8_t *sram, uint8_t slot_number, uint8_t mode)
