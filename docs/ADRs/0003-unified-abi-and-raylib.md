@@ -1,16 +1,16 @@
-# ADR 0003: Unified ABI and Raylib Frontend
+# ADR 0003: Unified ABI and Raylib Frontend (Superseded)
 
 ## Status
-Accepted
+Superseded (by ADR 0006)
 
 ## Context
-With the frontend logic stripped from individual cores (ADR 0002), we need a single, consistent way to interface with them programmatically. We also need a modern, simple frontend to test the games visually and manually verify hardware fidelity beyond automated testing.
+With the frontend logic stripped from individual cores (ADR 0002), we initially planned to design a single, consistent ABI to interface with them programmatically, alongside a unified testing frontend using Raylib.
 
 ## Decision
-1. **Clean ABI (`libemu` API):** We will design a clean, unified Application Binary Interface (ABI). Every core will implement exactly the same function pointer interface (e.g., `emu_init()`, `emu_load_rom()`, `emu_run_frame()`, `emu_set_input()`). Cores will emit audio and video blindly to memory buffers provided by the host. This simplifies integrating our cores into 3rd-party projects.
-2. **Raylib Frontend:** We will implement a single, unified testing frontend using the **Raylib** framework. Raylib is extremely lightweight, fast to iterate on, and compiles natively everywhere (including WebAssembly if needed).
-3. **Core Loading:** The Raylib frontend will load the specific core libraries dynamically or link them statically, rendering the exposed video buffer and playing the exposed audio buffer via Raylib's native API.
+**This decision has been superseded by the pivot to `retro-go` (ADR 0006).**
+1. **No Custom ABI Needed:** Because we are integrating directly into the `retro-go` framework, we no longer need a bespoke `libemu` ABI. The cores simply need to compile directly into the target binary (for G32 and SDL2) and conform to `retro-go`'s internal entry-point lifecycle (`_main()`).
+2. **No Raylib Port Needed:** `retro-go` natively includes a highly optimized SDL2 wrapper for testing and debugging on desktop machines (like Mac). The SDL2 target provides all the visual and manual verification capabilities we need without introducing Raylib as a secondary frontend dependency.
 
 ## Consequences
-- Integrators and UI developers only need to understand one API contract to run *any* supported console.
-- Significant reduction in duplicate boilerplate code across the project.
+- Less abstraction overhead: Cores hook directly into the `retro-go` application lifecycle instead of an intermediate ABI layer.
+- Consolidated tooling: Visual testing happens via the native `retro-go` SDL2 build rather than a separate Raylib app.
