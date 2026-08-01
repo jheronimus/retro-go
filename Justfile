@@ -38,6 +38,27 @@ check-footprint:
         fi \
     done
 
+build-oracle:
+    gcc -DCORE_GB -std=c99 -DWALNUT_GB_HEADER_ONLY -Icomponents/emu/oracle -Icomponents/emu/components/gb -Icomponents/emu/main \
+        components/emu/oracle/oracle_cli.c \
+        components/emu/components/gb/*.c components/emu/components/gb/mapper/*.c \
+        -o oracle_gb
+    gcc -DCORE_NES -std=c99 -Icomponents/emu/oracle -Icomponents/emu/components/nes -Icomponents/emu/main \
+        components/emu/oracle/oracle_cli.c \
+        components/emu/components/nes/*.c components/emu/components/nes/mapper/*.c \
+        -o oracle_nes
+    gcc -DCORE_PCE -std=c99 -Icomponents/emu/oracle -Icomponents/emu/components/pce -Icomponents/emu/main \
+        components/emu/oracle/oracle_cli.c \
+        components/emu/components/pce/*.c \
+        -o oracle_pce
+    gcc -DCORE_SMS -std=c99 -Icomponents/emu/oracle -Icomponents/emu/components/sms -Icomponents/emu/main \
+        components/emu/oracle/oracle_cli.c \
+        components/emu/components/sms/*.c components/emu/components/sms/sound/*.c \
+        components/emu/components/sms/cpu_cores/z80/*.c \
+        components/emu/components/sms/sound/maxim_sn76489/*.c \
+        components/emu/components/sms/sound_output/dummy/*.c \
+        -o oracle_sms
+
 clean:
     @echo "Cleaning build artifacts..."
     rm -f launcher.exe emu.exe gmon.out retro-go_mrgc-g32.fw

@@ -1,0 +1,164 @@
+Building SDL2...
+rm -f launcher.exe emu.exe gmon.out
+gcc -no-pie -DRG_TARGET_SDL2 -DRETRO_GO -DCJSON_HIDE_SYMBOLS -DSDL_MAIN_HANDLED=1 -DRG_BUILD_INFO=\"SDL2\" -Dapp_main=SDL_Main $(sdl2-config --cflags) -Icomponents/shared -Icomponents/shared/libs/cJSON -Icomponents/shared/libs/lodepng -Icomponents/shared/libs/miniz -Icomponents/launcher/main components/shared/*.c components/shared/drivers/audio/*.c components/shared/fonts/*.c components/shared/libs/cJSON/*.c components/shared/libs/lodepng/*.c components/shared/libs/miniz/*.c components/launcher/main/*.c $(sdl2-config --libs) -lstdc++ -o launcher.exe
+clang: warning: argument unused during compilation: '-no-pie' [-Wunused-command-line-argument]
+In file included from components/shared/rg_display.c:42:
+components/shared/drivers/display/sdl2.h:1:10: fatal error: 'SDL2/SDL.h' file not found
+    1 | #include <SDL2/SDL.h>
+      |          ^~~~~~~~~~~~
+1 error generated.
+components/shared/rg_input.c:15:10: fatal error: 'SDL2/SDL.h' file not found
+   15 | #include <SDL2/SDL.h>
+      |          ^~~~~~~~~~~~
+1 error generated.
+components/shared/rg_system.c:23:10: fatal error: 'SDL2/SDL.h' file not found
+   23 | #include <SDL2/SDL.h>
+      |          ^~~~~~~~~~~~
+1 error generated.
+components/shared/drivers/audio/sdl2.c:5:10: fatal error: 'SDL2/SDL.h' file not found
+    5 | #include <SDL2/SDL.h>
+      |          ^~~~~~~~~~~~
+1 error generated.
+components/launcher/main/applications.c:57:83: warning: format specifies type 'int' but the argument has type 'size_t' (aka 'unsigned long') [-Wformat]
+   57 |             RG_LOGW("Ran out of memory, file scanning stopped at %d entries ...", app->files_count);
+      |                                                                  ~~               ^~~~~~~~~~~~~~~~
+      |                                                                  %zu
+components/shared/rg_system.h:311:70: note: expanded from macro 'RG_LOGW'
+  311 | #define RG_LOGW(x, ...) rg_system_log(RG_LOG_WARN, RG_LOG_TAG, x, ## __VA_ARGS__)
+      |                                                                ~     ^~~~~~~~~~~
+components/launcher/main/applications.c:67:89: warning: format specifies type 'int' but the argument has type 'size_t' (aka 'unsigned long') [-Wformat]
+   67 |         RG_LOGW("Ran out of memory for names, file scanning stopped at %d entries ...", app->files_count);
+      |                                                                        ~~               ^~~~~~~~~~~~~~~~
+      |                                                                        %zu
+components/shared/rg_system.h:311:70: note: expanded from macro 'RG_LOGW'
+  311 | #define RG_LOGW(x, ...) rg_system_log(RG_LOG_WARN, RG_LOG_TAG, x, ## __VA_ARGS__)
+      |                                                                ~     ^~~~~~~~~~~
+components/launcher/main/applications.c:376:45: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+  376 |         sprintf(tab->listbox.items[0].text, _("Welcome to Retro-Go!"));
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^~~~~~~~~~~
+components/launcher/main/applications.c:376:45: note: treat the string as an argument to avoid this
+  376 |         sprintf(tab->listbox.items[0].text, _("Welcome to Retro-Go!"));
+      |                                             ^
+      |                                             "%s", 
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                                                       ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^
+components/launcher/main/applications.c:381:45: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+  381 |         sprintf(tab->listbox.items[5].text, _("You can hide this tab in the menu"));
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^~~~~~~~~~~
+components/launcher/main/applications.c:381:45: note: treat the string as an argument to avoid this
+  381 |         sprintf(tab->listbox.items[5].text, _("You can hide this tab in the menu"));
+      |                                             ^
+      |                                             "%s", 
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                                                       ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^
+components/launcher/main/applications.c:566:64: warning: format specifies type 'int' but the argument has type 'size_t' (aka 'unsigned long') [-Wformat]
+  566 |             sprintf(filecrc, "%08X (%d)", (int)file->checksum, file->app->crc_offset);
+      |                                     ~~                         ^~~~~~~~~~~~~~~~~~~~~
+      |                                     %zu
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                                                       ^~~~~~~~~~~
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^~~~~~~~~~~
+5 warnings generated.
+components/launcher/main/bookmarks.c:84:45: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+   84 |         sprintf(tab->listbox.items[0].text, _("Welcome to Retro-Go!"));
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^~~~~~~~~~~
+components/launcher/main/bookmarks.c:84:45: note: treat the string as an argument to avoid this
+   84 |         sprintf(tab->listbox.items[0].text, _("Welcome to Retro-Go!"));
+      |                                             ^
+      |                                             "%s", 
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                                                       ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^
+components/launcher/main/bookmarks.c:88:45: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+   88 |         sprintf(tab->listbox.items[4].text, _("You can hide this tab in the menu"));
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^~~~~~~~~~~
+components/launcher/main/bookmarks.c:88:45: note: treat the string as an argument to avoid this
+   88 |         sprintf(tab->listbox.items[4].text, _("You can hide this tab in the menu"));
+      |                                             ^
+      |                                             "%s", 
+components/shared/rg_localization.h:6:19: note: expanded from macro '_'
+    6 | #define _(String) rg_gettext(String)
+      |                   ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:107:55: note: expanded from macro 'sprintf'
+  107 | #define sprintf(str, ...) __sprintf_chk_func (str, 0, __VA_ARGS__)
+      |                                                       ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/secure/_stdio.h:87:58: note: expanded from macro '__sprintf_chk_func'
+   87 |         __builtin___sprintf_chk (str, flag, __darwin_obsz(str), __VA_ARGS__)
+      |                                                                 ^
+2 warnings generated.
+components/launcher/main/gui.c:83:56: warning: format specifies type 'int' but the argument has type 'size_t' (aka 'unsigned long') [-Wformat]
+   83 |     RG_LOGI("Tab '%s' added at index %d\n", tab->name, gui.tabs_count - 1);
+      |                                      ~~                ^~~~~~~~~~~~~~~~~~
+      |                                      %zu
+components/shared/rg_system.h:312:70: note: expanded from macro 'RG_LOGI'
+  312 | #define RG_LOGI(x, ...) rg_system_log(RG_LOG_INFO, RG_LOG_TAG, x, ## __VA_ARGS__)
+      |                                                                ~     ^~~~~~~~~~~
+1 warning generated.
+components/launcher/main/main.c:441:1: warning: return type of 'main' is not 'int' [-Wmain-return-type]
+  441 | void app_main(void)
+      | ^
+components/launcher/main/main.c:441:1: note: change return type to 'int'
+  441 | void app_main(void)
+      | ^~~~
+      | int
+1 warning generated.
+error: recipe `build-sdl2` failed on line 9 with exit code 1

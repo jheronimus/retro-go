@@ -21,4 +21,8 @@ build/
 /stdout.txt
 /gmon.out
 /*.exe
+/oracle_gb
+/oracle_nes
+/oracle_pce
+/oracle_sms
 .DS_Store
